@@ -58,53 +58,94 @@ st.divider()
 
 # 1. Concrete Calculator
 if calc_type == "Concrete Volume & Material Calculator":
-    st.subheader("🧱 Concrete Volume & Material Estimator (1 : 2 : 4 Mix Ratio)")
+    st.subheader("🧱 Concrete Mix & Material Estimator")
     
-    col1, col2, col3 = st.columns(3)
+    # Structural Member Selection
+    element_type = st.radio(
+        "Select Structural Element:",
+        ["Slab", "Beam", "Column", "Footing", "Staircase"],
+        horizontal=True
+    )
+    
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         length = st.number_input("Length (ft)", min_value=0.1, value=10.0, step=0.5)
     with col2:
         width = st.number_input("Width (ft)", min_value=0.1, value=10.0, step=0.5)
     with col3:
-        thickness = st.number_input("Thickness (inches)", min_value=0.1, value=5.0, step=0.5)
+        thickness = st.number_input("Thickness / Depth (inches)", min_value=0.1, value=5.0, step=0.5)
+    with col4:
+        num_elements = st.number_input("Number of Elements", min_value=1, value=1, step=1)
+        
+    col_g1, col_g2 = st.columns(2)
+    with col_g1:
+        concrete_grade = st.selectbox(
+            "Concrete Grade (Mix Ratio)",
+            [
+                "M10 — 1:3:6 (PCC / Lean Concrete)",
+                "M15 — 1:2:4 (General RCC Work)",
+                "M20 — 1:1.5:3 (Standard RCC Member)",
+                "M25 — 1:1:2 (Heavy Structural RCC)"
+            ],
+            index=1
+        )
+    with col_g2:
+        wastage_pct = st.slider("Concrete Wastage (%)", min_value=0, max_value=15, value=5)
         
     cement_price = st.sidebar.number_input("Cement Price (per bag - BDT)", value=550)
     sand_price = st.sidebar.number_input("Sand Price (per CFT - BDT)", value=45)
     chips_price = st.sidebar.number_input("Coarse Aggregate Price (per CFT - BDT)", value=120)
 
     if st.button("Calculate Concrete", type="primary"):
-        wet_vol = length * width * (thickness / 12.0)
-        dry_vol = wet_vol * 1.54
+        # Single element wet volume in CFT
+        single_wet_vol = length * width * (thickness / 12.0)
+        total_wet_vol = single_wet_vol * num_elements
         
-        total_ratio = 1 + 2 + 4
-        cement_cft = (1 / total_ratio) * dry_vol
+        # Dry volume calculation with wastage
+        dry_vol = total_wet_vol * 1.54
+        dry_vol += dry_vol * (wastage_pct / 100.0)
+        
+        # Extract ratio numbers from selected string
+        ratio_str = concrete_grade.split("—")[1].split("(")[0].strip()
+        c_r, s_r, a_r = map(float, ratio_str.split(":"))
+        total_ratio = c_r + s_r + a_r
+        
+        cement_cft = (c_r / total_ratio) * dry_vol
         cement_bags = cement_cft / 1.25
-        sand_cft = (2 / total_ratio) * dry_vol
-        chips_cft = (4 / total_ratio) * dry_vol
+        sand_cft = (s_r / total_ratio) * dry_vol
+        chips_cft = (a_r / total_ratio) * dry_vol
+        
+        # Water calculation (approx 25 liters per bag of cement)
+        water_liters = cement_bags * 25
         
         total_cost = (cement_bags * cement_price) + (sand_cft * sand_price) + (chips_cft * chips_price)
 
-        st.success(f"**Total Concrete Volume (Wet):** {wet_vol:.2f} CFT")
+        st.success(f"**Total Concrete Volume ({num_elements} {element_type}s):** {total_wet_vol:.2f} CFT (Includes {wastage_pct}% Wastage)")
         
-        m1, m2, m3, m4 = st.columns(4)
+        m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("Cement Required", f"{cement_bags:.2f} Bags")
         m2.metric("Sand Required", f"{sand_cft:.2f} CFT")
         m3.metric("Aggregate Required", f"{chips_cft:.2f} CFT")
-        m4.metric("Estimated Cost", f"BDT {total_cost:,.2f}")
+        m4.metric("Water Needed", f"{water_liters:.0f} Liters")
+        m5.metric("Estimated Cost", f"BDT {total_cost:,.2f}")
         
         # PDF Generation
         report_data = {
-            "Total Wet Volume": f"{wet_vol:.2f} CFT",
-            "Cement Bags Required": f"{cement_bags:.2f} Bags",
+            "Element Type": f"{element_type} (Qty: {num_elements})",
+            "Concrete Grade": concrete_grade,
+            "Total Wet Volume": f"{total_wet_vol:.2f} CFT",
+            "Wastage Percentage": f"{wastage_pct}%",
+            "Cement Required": f"{cement_bags:.2f} Bags",
             "Sand Required": f"{sand_cft:.2f} CFT",
             "Coarse Aggregate Required": f"{chips_cft:.2f} CFT",
+            "Water Required": f"~{water_liters:.0f} Liters",
             "Estimated Total Cost": f"BDT {total_cost:,.2f}"
         }
-        pdf_bytes = generate_pdf("Concrete Volume & Material Estimation", report_data)
+        pdf_bytes = generate_pdf(f"Concrete Mix Estimation ({element_type})", report_data)
         st.download_button(
             label="📄 Download PDF Report",
             data=pdf_bytes,
-            file_name="concrete_estimation_report.pdf",
+            file_name=f"concrete_{element_type.lower()}_report.pdf",
             mime="application/pdf"
         )
 
