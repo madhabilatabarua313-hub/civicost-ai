@@ -207,31 +207,85 @@ elif calc_type == "Brickwork Estimator":
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        wall_length = st.number_input("Wall Length (ft)", min_value=0.1, value=20.0)
+        wall_length = st.number_input("Wall Length (ft)", min_value=0.1, value=20.0, step=0.5)
     with col2:
-        wall_height = st.number_input("Wall Height (ft)", min_value=0.1, value=10.0)
+        wall_height = st.number_input("Wall Height (ft)", min_value=0.1, value=10.0, step=0.5)
     with col3:
-        wall_thickness = st.selectbox("Wall Thickness", ["5 inch", "10 inch"])
-        
-    brick_unit_price = st.sidebar.number_input("Price per Brick (BDT)", value=12.5)
+        wall_thick = st.selectbox("Wall Thickness", ["5 inch (Single Brick)", "10 inch (Double / Outer Wall)", "3 inch (Partition Wall)"])
+
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        mortar_ratio = st.selectbox("Mortar Mix Ratio (Cement : Sand)", ["1:4 (Rich Mix)", "1:5 (Standard)", "1:6 (Lean Mix)"], index=1)
+    with col_b:
+        openings_area = st.number_input("Deduct Openings (Doors/Windows Sq. Ft.)", min_value=0.0, value=0.0, step=5.0)
+    with col_c:
+        wastage_pct = st.slider("Brick Wastage (%)", min_value=0, max_value=15, value=5)
+
+    brick_price = st.sidebar.number_input("Price per Brick (BDT)", value=12.5)
+    cement_price = st.sidebar.number_input("Cement Price (per bag - BDT)", value=550)
+    sand_price = st.sidebar.number_input("Sand Price (per CFT - BDT)", value=45)
 
     if st.button("Calculate Brickwork", type="primary"):
-        wall_area = wall_length * wall_height
-        total_bricks = wall_area * 5 if wall_thickness == "5 inch" else wall_area * 10
-        brick_cost = total_bricks * brick_unit_price
+        # Wall Area Calculation
+        gross_area = wall_length * wall_height
+        net_area = max(0.0, gross_area - openings_area)
         
-        st.success(f"**Total Wall Area:** {wall_area:.2f} Sq. Ft.")
-        
-        c1, c2 = st.columns(2)
-        c1.metric("Bricks Required", f"{int(total_bricks)} Pcs")
-        c2.metric("Estimated Brick Cost", f"BDT {brick_cost:,.2f}")
-        
+        # Wall Thickness in feet
+        if "5 inch" in wall_thick:
+            thick_ft = 5.0 / 12.0
+            bricks_per_sqft = 5.0  # Standard BD estimate for 5" wall
+        elif "10 inch" in wall_thick:
+            thick_ft = 10.0 / 12.0
+            bricks_per_sqft = 10.0 # Standard BD estimate for 10" wall
+        else:
+            thick_ft = 3.0 / 12.0
+            bricks_per_sqft = 3.5
+
+        # Total Bricks calculation with wastage
+        base_bricks = net_area * bricks_per_sqft
+        total_bricks = int(base_bricks + (base_bricks * wastage_pct / 100.0))
+
+        # Mortar Dry Volume calculation (Approx 30% of total wall volume)
+        wall_volume = net_area * thick_ft
+        wet_mortar_vol = wall_volume * 0.30
+        dry_mortar_vol = wet_mortar_vol * 1.33
+
+        # Mortar Mix Ratio split
+        ratio_parts = mortar_ratio.split("(")[0].strip().split(":")
+        c_part = float(ratio_parts[0])
+        s_part = float(ratio_parts[1])
+        total_parts = c_part + s_part
+
+        cement_cft = (c_part / total_parts) * dry_mortar_vol
+        cement_bags = cement_cft / 1.25
+        sand_cft = (s_part / total_parts) * dry_mortar_vol
+
+        # Costing
+        cost_bricks = total_bricks * brick_price
+        cost_cement = cement_bags * cement_price
+        cost_sand = sand_cft * sand_price
+        total_cost = cost_bricks + cost_cement + cost_sand
+
+        st.success(f"**Net Wall Area:** {net_area:.2f} Sq. Ft. (Gross: {gross_area:.2f} sq.ft, Deducted: {openings_area} sq.ft)")
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Bricks Needed", f"{total_bricks:,} Nos")
+        c2.metric("Cement Required", f"{cement_bags:.2f} Bags")
+        c3.metric("Sand Required", f"{sand_cft:.2f} CFT")
+        c4.metric("Estimated Cost", f"BDT {total_cost:,.2f}")
+
         # PDF Generation
         report_data = {
-            "Wall Area": f"{wall_area:.2f} Sq. Ft.",
-            "Wall Thickness": wall_thickness,
-            "Total Bricks Required": f"{int(total_bricks)} Pcs",
-            "Estimated Brick Cost": f"BDT {brick_cost:,.2f}"
+            "Gross Wall Area": f"{gross_area:.2f} Sq. Ft.",
+            "Openings Deducted": f"{openings_area:.2f} Sq. Ft.",
+            "Net Wall Area": f"{net_area:.2f} Sq. Ft.",
+            "Wall Thickness": wall_thick,
+            "Mortar Ratio": mortar_ratio,
+            "Wastage Allowed": f"{wastage_pct}%",
+            "Bricks Required": f"{total_bricks:,} Nos",
+            "Cement Required": f"{cement_bags:.2f} Bags",
+            "Sand Required": f"{sand_cft:.2f} CFT",
+            "Estimated Total Cost": f"BDT {total_cost:,.2f}"
         }
         pdf_bytes = generate_pdf("Brickwork Estimation", report_data)
         st.download_button(
@@ -240,7 +294,6 @@ elif calc_type == "Brickwork Estimator":
             file_name="brickwork_report.pdf",
             mime="application/pdf"
         )
-
 # 4. Plastering Calculator
 elif calc_type == "Plastering Estimator":
     st.subheader("🖌️ Wall & Ceiling Plastering Estimator")
