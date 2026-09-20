@@ -2,7 +2,7 @@ import streamlit as st
 
 # Page Configuration
 st.set_page_config(
-    page_page_title="CiviCost AI",
+    page_title="CiviCost AI",
     page_icon="🏗️",
     layout="wide"
 )
