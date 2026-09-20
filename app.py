@@ -202,35 +202,63 @@ elif calc_type == "Brickwork Estimator":
 
 # 4. Plastering Calculator
 elif calc_type == "Plastering Estimator":
-    st.subheader("🖌️ Wall Plastering Estimator (1:4 Ratio)")
+    st.subheader("🖌️ Wall & Ceiling Plastering Estimator")
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         plaster_area = st.number_input("Plaster Area (Sq. Ft.)", min_value=1.0, value=500.0)
     with col2:
-        plaster_thick = st.selectbox("Plaster Thickness", ["0.5 inch (12 mm)", "0.75 inch (18 mm)"])
+        plaster_thick = st.selectbox("Plaster Thickness", ["0.5 inch (12 mm)", "0.75 inch (18 mm)", "0.25 inch (6 mm)"])
+    with col3:
+        mix_ratio = st.selectbox("Mix Ratio (Cement : Sand)", ["1:3 (Ceiling)", "1:4 (Outer Wall)", "1:5 (Inner Wall)", "1:6 (Inner Wall)"])
+        
+    cement_price = st.sidebar.number_input("Cement Price (per bag - BDT)", value=550)
+    sand_price = st.sidebar.number_input("Sand Price (per CFT - BDT)", value=45)
+    wastage_pct = st.sidebar.slider("Plaster Wastage (%)", min_value=0, max_value=15, value=5)
 
     if st.button("Calculate Plaster", type="primary"):
-        thick_ft = 0.5 / 12.0 if "0.5" in plaster_thick else 0.75 / 12.0
+        # Thickness conversion
+        if "0.25" in plaster_thick:
+            thick_ft = 0.25 / 12.0
+        elif "0.5" in plaster_thick:
+            thick_ft = 0.5 / 12.0
+        else:
+            thick_ft = 0.75 / 12.0
+            
         wet_vol = plaster_area * thick_ft
-        dry_vol = wet_vol * 1.33
+        dry_vol = wet_vol * 1.33  # Dry volume multiplier
         
-        cement_cft = (1 / 5) * dry_vol
+        # Add wastage
+        dry_vol += dry_vol * (wastage_pct / 100.0)
+        
+        # Ratio Calculation
+        ratio_parts = mix_ratio.split("(")[0].strip().split(":")
+        c_part = float(ratio_parts[0])
+        s_part = float(ratio_parts[1])
+        total_parts = c_part + s_part
+        
+        cement_cft = (c_part / total_parts) * dry_vol
         cement_bags = cement_cft / 1.25
-        sand_cft = (4 / 5) * dry_vol
+        sand_cft = (s_part / total_parts) * dry_vol
         
-        st.success(f"**Total Plaster Area:** {plaster_area} Sq. Ft.")
+        total_cost = (cement_bags * cement_price) + (sand_cft * sand_price)
         
-        c1, c2 = st.columns(2)
+        st.success(f"**Total Plaster Area:** {plaster_area} Sq. Ft. (Wastage Included: {wastage_pct}%)")
+        
+        c1, c2, c3 = st.columns(3)
         c1.metric("Cement Required", f"{cement_bags:.2f} Bags")
         c2.metric("Sand Required", f"{sand_cft:.2f} CFT")
+        c3.metric("Estimated Material Cost", f"BDT {total_cost:,.2f}")
         
         # PDF Generation
         report_data = {
             "Plaster Area": f"{plaster_area} Sq. Ft.",
             "Thickness": plaster_thick,
+            "Mix Ratio": mix_ratio,
+            "Wastage Allowance": f"{wastage_pct}%",
             "Cement Required": f"{cement_bags:.2f} Bags",
-            "Sand Required": f"{sand_cft:.2f} CFT"
+            "Sand Required": f"{sand_cft:.2f} CFT",
+            "Estimated Total Cost": f"BDT {total_cost:,.2f}"
         }
         pdf_bytes = generate_pdf("Plastering Estimation", report_data)
         st.download_button(
