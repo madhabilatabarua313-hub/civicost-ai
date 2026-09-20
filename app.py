@@ -149,58 +149,73 @@ if calc_type == "Concrete Volume & Material Calculator":
             mime="application/pdf"
         )
 
-# 2. Rebar Calculator
+# 2. Rebar (Steel) Calculator
 elif calc_type == "Rebar (Steel) Calculator":
-    st.subheader("⚙️ Rebar (Steel) Quantity & Weight Estimator")
+    st.subheader("⚙️ Rebar (Steel) Quantity, Weight & BBS Estimator")
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        bar_size = st.selectbox("Bar Diameter (mm)", [8, 10, 12, 16, 20, 25])
+        bar_dia = st.selectbox(
+            "Bar Diameter (mm)",
+            [8, 10, 12, 16, 20, 22, 25, 28, 32],
+            index=3,
+            help="Select BSTI standard rebar size in mm"
+        )
     with col2:
-        num_bars = st.number_input("Number of Bars", min_value=1, value=10, step=1)
+        num_bars = st.number_input("Number of Bars / Pieces", min_value=1, value=10, step=1)
     with col3:
-        bar_length = st.number_input("Length per Bar (ft)", min_value=0.1, value=39.5, step=0.5)
-        
-    steel_price_kg = st.sidebar.number_input("Steel Price (per kg - BDT)", value=98.0)
-    wastage_pct = st.sidebar.slider("Wastage Allowance (%)", min_value=0, max_value=15, value=5)
+        input_mode = st.radio("Length Unit Mode", ["Custom Length (ft)", "Standard 12m Bars (40 ft)"], horizontal=True)
+
+    if input_mode == "Custom Length (ft)":
+        length_per_bar = st.number_input("Length per Bar (ft)", min_value=0.1, value=39.5, step=0.5)
+    else:
+        length_per_bar = 39.37  # Standard 12 meter length
+
+    steel_price_per_kg = st.sidebar.number_input("Steel Price (per kg - BDT)", value=98.0)
+    wastage_pct = st.sidebar.slider("Rebar Cutting Wastage & Lapping (%)", min_value=0, max_value=15, value=5)
 
     if st.button("Calculate Rebar", type="primary"):
-        total_length_ft = num_bars * bar_length
-        # Unit weight formula: W (kg/ft) = (d^2) / 533
-        unit_weight_kg_ft = (bar_size ** 2) / 533.0
-        base_weight_kg = total_length_ft * unit_weight_kg_ft
+        total_length_ft = length_per_bar * num_bars
         
-        wastage_kg = base_weight_kg * (wastage_pct / 100.0)
-        total_weight_kg = base_weight_kg + wastage_kg
+        # Formula: Weight per foot (kg/ft) = d^2 / 533
+        weight_per_ft = (bar_dia ** 2) / 533.0
+        
+        base_weight_kg = total_length_ft * weight_per_ft
+        total_weight_kg = base_weight_kg + (base_weight_kg * wastage_pct / 100.0)
+        
         total_weight_ton = total_weight_kg / 1000.0
-        total_cost = total_weight_kg * steel_price_kg
+        total_cost = total_weight_kg * steel_price_per_kg
+        
+        # Calculate full 12m length rod count equivalent
+        full_rods_equivalent = (total_length_ft * (1 + wastage_pct/100.0)) / 39.37
 
-        st.success(f"**Total Rebar Length:** {total_length_ft:.2f} ft")
+        st.success(f"**Total Rebar Length:** {total_length_ft:.2f} ft (Includes {wastage_pct}% Wastage/Lapping)")
         
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Unit Weight", f"{unit_weight_kg_ft:.3f} kg/ft")
-        c2.metric("Total Weight (KG)", f"{total_weight_kg:.2f} kg")
-        c3.metric("Total Weight (Ton)", f"{total_weight_ton:.3f} Ton")
-        c4.metric("Estimated Cost", f"BDT {total_cost:,.2f}")
+        c1.metric("Total Weight (KG)", f"{total_weight_kg:.2f} Kg")
+        c2.metric("Total Weight (Tons)", f"{total_weight_ton:.3f} Ton")
+        c3.metric("Standard 12m Rods", f"~{int(round(full_rods_equivalent))} Nos")
+        c4.metric("Estimated Steel Cost", f"BDT {total_cost:,.2f}")
         
         # PDF Generation
         report_data = {
-            "Bar Size": f"{bar_size} mm",
-            "Total Number of Bars": f"{num_bars} Nos",
-            "Single Bar Length": f"{bar_length} ft",
-            "Total Rebar Length": f"{total_length_ft:.2f} ft",
-            "Wastage Allowance": f"{wastage_pct}%",
-            "Total Weight Required": f"{total_weight_kg:.2f} kg ({total_weight_ton:.3f} Ton)",
+            "Bar Diameter": f"{bar_dia} mm",
+            "Number of Pieces": f"{num_bars} Nos",
+            "Length per Bar": f"{length_per_bar:.2f} ft",
+            "Total Length": f"{total_length_ft:.2f} ft",
+            "Wastage Allowed": f"{wastage_pct}%",
+            "Total Weight (Kg)": f"{total_weight_kg:.2f} Kg",
+            "Total Weight (Tons)": f"{total_weight_ton:.3f} Ton",
+            "Equivalent 12m Rods": f"~{int(round(full_rods_equivalent))} Nos",
             "Estimated Total Cost": f"BDT {total_cost:,.2f}"
         }
-        pdf_bytes = generate_pdf(f"Rebar ({bar_size}mm) Weight Estimation", report_data)
+        pdf_bytes = generate_pdf("Rebar (Steel) Quantity Estimation", report_data)
         st.download_button(
             label="📄 Download PDF Report",
             data=pdf_bytes,
-            file_name=f"rebar_{bar_size}mm_report.pdf",
+            file_name="rebar_estimation_report.pdf",
             mime="application/pdf"
         )
-
 # 3. Brickwork Calculator
 elif calc_type == "Brickwork Estimator":
     st.subheader("🧱 Brickwork & Mortar Estimator")
