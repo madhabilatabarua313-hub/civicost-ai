@@ -1,8 +1,51 @@
-import streamlit as st
+import io
 import pandas as pd
-
+import streamlit as st
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 st.set_page_config(page_title="CiviCost AI - Structural Estimator", layout="wide", page_icon="🏗️")
 
+def generate_pdf_report(title, engineer_name, total_cost, summary_items):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Title & Header
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, height - 50, title)
+    p.setFont("Helvetica", 10)
+    p.drawString(
+        50, height - 65, "--------------------------------------------------"
+    )
+
+    # Engineer Name
+    p.setFont("Helvetica-Bold", 11)
+    p.drawString(50, height - 85, f"Prepared By (Engineer): {engineer_name}")
+    p.setFont("Helvetica", 10)
+    p.drawString(
+        50, height - 95, "--------------------------------------------------"
+    )
+
+    # Details
+    y = height - 125
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(50, y, "Details:")
+    y -= 20
+
+    p.setFont("Helvetica", 10)
+    for line in summary_items:
+        p.drawString(60, y, f"• {line}")
+        y -= 18
+
+    # Total Cost
+    y -= 10
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(50, y, f"Total Estimated Cost: BDT {total_cost:,.2f}")
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return buffer
 # ---------------------------------------------------------
 # INITIALIZE SESSION STATES (Avoids KeyError)
 # ---------------------------------------------------------
@@ -40,7 +83,8 @@ def set_nav(page_name):
 # SIDEBAR: NAVIGATION & MARKET RATES
 # ---------------------------------------------------------
 st.sidebar.title("📌 Navigation")
-
+st.sidebar.subheader("📌 Project Details")
+engineer_name = st.sidebar.text_input("Engineer Name", value="Engr. Madhabilata Barua")
 nav_options = [
     "🏠 Project Control Center (Home)",
     "⛏️ Excavation & Soling",
@@ -173,19 +217,40 @@ elif st.session_state["calc_type"] == "⛏️ Excavation & Soling":
     with r_c3: st.metric("Sand Cushion", f"{sand_vol_cft:,.2f} CFT", f"BDT {cost_sand:,.2f}")
     with r_c4: st.metric("Soling Bricks", f"{total_soling_bricks:,.0f} Pcs", f"BDT {cost_soling_bricks:,.2f}")
 
-    st.success(f"💰 Total Sub-Structure Cost: BDT {total_ex_soling_cost:,.2f}")
+    # PDF Breakdown Summary Items
+ex_summary_items = [
+    f"Total Footings/Trenches: {footing_count}",
+    (
+        "Excavation Volume:"
+        f" {excavation_vol_cft:.2f} CFT (BDT {cost_excavation:,.2f})"
+    ),
+    (
+        "Backfilling Volume:"
+        f" {backfill_vol_cft:.2f} CFT (BDT {cost_backfill:,.2f})"
+    ),
+    f"Sand Cushion Volume: {sand_vol_cft:.2f} CFT (BDT {cost_sand:,.2f})",
+    (
+        "Soling Bricks:"
+        f" {total_soling_bricks:.0f} Pcs (BDT {cost_soling_bricks:,.2f})"
+    ),
+]
 
-    ex_report = get_download_report("Excavation & Soling Estimate", {
-        "Total Footings/Trenches": footing_count,
-        "Excavation Volume": f"{excavation_vol_cft:,.2f} CFT (BDT {cost_excavation:,.2f})",
-        "Backfilling Volume": f"{backfill_vol_cft:,.2f} CFT (BDT {cost_backfill:,.2f})",
-        "Sand Cushion Volume": f"{sand_vol_cft:,.2f} CFT (BDT {cost_sand:,.2f})",
-        "Soling Bricks": f"{total_soling_bricks:,.0f} Pcs (BDT {cost_soling_bricks:,.2f})"
-    }, total_ex_soling_cost)
+# PDF Generation
+ex_pdf = generate_pdf_report(
+    title="Excavation & Soling Estimate",
+    engineer_name=engineer_name,
+    total_cost=total_ex_soling_cost,
+    summary_items=ex_summary_items,
+)
 
-    st.download_button("📄 Download Section Report (.txt)", data=ex_report, file_name="Excavation_Report.txt")
+# PDF Download Button
+st.download_button(
+    label="📄 Download Section Report (.pdf)",
+    data=ex_pdf,
+    file_name="Excavation_Report.pdf",
+    mime="application/pdf",
+)
 
-# ---------------------------------------------------------
 # 3. ADVANCED CONCRETE VOLUME (Beam, Column, Slab, Stair)
 # ---------------------------------------------------------
 elif st.session_state["calc_type"] == "🧱 Concrete Volume (Beam, Column, Slab, Stair)":
@@ -254,17 +319,32 @@ elif st.session_state["calc_type"] == "🧱 Concrete Volume (Beam, Column, Slab,
 
     st.success(f"💰 Total Concrete Cost: BDT {total_concrete_cost:,.2f}")
 
-    conc_report = get_download_report(f"Concrete Estimate ({struct_type})", {
-        "Element Type": struct_type,
-        "Total Count": elem_count,
-        "Wet Volume": f"{wet_vol:,.2f} CFT",
-        "Dry Volume": f"{dry_vol:,.2f} CFT",
-        "Cement Requirement": f"{cement_bags:,.2f} Bags (BDT {cost_cement:,.2f})",
-        "Sand Requirement": f"{sand_cft:,.2f} CFT (BDT {cost_sand:,.2f})",
-        "Aggregate Requirement": f"{agg_cft:,.2f} CFT (BDT {cost_agg:,.2f})"
-    }, total_concrete_cost)
+  # Concrete PDF Summary Items
+conc_summary_items = [
+    f"Element Type: {struct_type}",
+    f"Total Count: {elem_count}",
+    f"Wet Volume: {wet_vol:.2f} CFT",
+    f"Dry Volume: {dry_vol:.2f} CFT",
+    f"Cement Requirement: {cement_bags:.2f} Bags (BDT {cost_cement:,.2f})",
+    f"Sand Requirement: {sand_cft:.2f} CFT (BDT {cost_sand:,.2f})",
+    f"Aggregate Requirement: {agg_cft:.2f} CFT (BDT {cost_agg:,.2f})",
+]
 
-    st.download_button("📄 Download Section Report (.txt)", data=conc_report, file_name="Concrete_Report.txt")
+# Concrete PDF Generation
+conc_pdf = generate_pdf_report(
+    title=f"Concrete Estimate ({struct_type})",
+    engineer_name=engineer_name,
+    total_cost=total_concrete_cost,
+    summary_items=conc_summary_items,
+)
+
+# PDF Download Button
+st.download_button(
+    label="📄 Download Section Report (.pdf)",
+    data=conc_pdf,
+    file_name=f"Concrete_Report_{struct_type}.pdf",
+    mime="application/pdf",
+)
 
 # ---------------------------------------------------------
 # 4. REINFORCEMENT STEEL (REBAR)
@@ -296,13 +376,31 @@ elif st.session_state["calc_type"] == "🔩 Rebar (Steel)":
 
     st.success(f"💰 Total Steel Cost: BDT {steel_cost:,.2f}")
 
-    steel_report = get_download_report("Steel Rebar Estimate", {
-        "Rebar Weight": f"{steel_weight_kg:,.2f} Kg ({steel_weight_ton:,.3f} Ton)",
-        "Binding Wire": f"{binding_wire_kg:,.2f} Kg",
-        "Unit Rate": f"BDT {rod_price}/Kg"
-    }, steel_cost)
+   # Rebar/Steel PDF Summary Items
+steel_summary_items = [
+    (
+        f"Rebar Weight: {steel_weight_kg:,.2f} Kg"
+        f" ({steel_weight_ton:,.3f} Ton)"
+    ),
+    f"Binding Wire: {binding_wire_kg:,.2f} Kg",
+    f"Unit Rate: BDT {rod_price}/Kg",
+]
 
-    st.download_button("📄 Download Section Report (.txt)", data=steel_report, file_name="Rebar_Report.txt")
+# Rebar PDF Generation
+steel_pdf = generate_pdf_report(
+    title="Steel Rebar Estimate",
+    engineer_name=engineer_name,
+    total_cost=steel_cost,
+    summary_items=steel_summary_items,
+)
+
+# PDF Download Button
+st.download_button(
+    label="📄 Download Section Report (.pdf)",
+    data=steel_pdf,
+    file_name="Rebar_Report.pdf",
+    mime="application/pdf",
+)
 
 # ---------------------------------------------------------
 # 5. BRICKWORK ESTIMATOR WITH OPENING DEDUCTIONS
@@ -356,14 +454,29 @@ elif st.session_state["calc_type"] == "🧱 Brickwork Estimator":
 
     st.success(f"💰 Total Brickwork Cost: BDT {total_bw_cost:,.2f}")
 
-    bw_report = get_download_report("Brickwork Estimate", {
-        "Net Wall Area": f"{net_wall_area:,.2f} Sq. Ft",
-        "Total Bricks": f"{total_bricks:,.0f} Pcs (BDT {cost_b:,.2f})",
-        "Mortar Cement": f"{b_cement_bags:,.2f} Bags (BDT {cost_c:,.2f})",
-        "Mortar Sand": f"{b_sand_cft:,.2f} CFT (BDT {cost_s:,.2f})"
-    }, total_bw_cost)
+   # Brickwork PDF Summary Items
+bw_summary_items = [
+    f"Net Wall Area: {net_wall_area:,.2f} Sq. Ft",
+    f"Total Bricks: {total_bricks:,.0f} Pcs (BDT {cost_b:,.2f})",
+    f"Mortar Cement: {b_cement_bags:,.2f} Bags (BDT {cost_c:,.2f})",
+    f"Mortar Sand: {b_sand_cft:,.2f} CFT (BDT {cost_s:,.2f})",
+]
 
-    st.download_button("📄 Download Section Report (.txt)", data=bw_report, file_name="Brickwork_Report.txt")
+# Brickwork PDF Generation
+bw_pdf = generate_pdf_report(
+    title="Brickwork Estimate",
+    engineer_name=engineer_name,
+    total_cost=total_bw_cost,
+    summary_items=bw_summary_items,
+)
+
+# PDF Download Button
+st.download_button(
+    label="📄 Download Section Report (.pdf)",
+    data=bw_pdf,
+    file_name="Brickwork_Report.pdf",
+    mime="application/pdf",
+)
 
 # ---------------------------------------------------------
 # 6. PLASTERING ESTIMATOR
@@ -401,14 +514,29 @@ elif st.session_state["calc_type"] == "🎨 Plastering Estimator":
 
     st.success(f"💰 Total Plastering Cost: BDT {total_plaster_cost:,.2f}")
 
-    plaster_report = get_download_report("Plastering Estimate", {
-        "Effective Area": f"{effective_area:,.2f} Sq. Ft",
-        "Plaster Thickness": f"{p_thick} mm",
-        "Plaster Cement": f"{p_cement_bags:,.2f} Bags (BDT {p_cost_c:,.2f})",
-        "Plaster Sand": f"{p_sand_cft:,.2f} CFT (BDT {p_cost_s:,.2f})"
-    }, total_plaster_cost)
+ # Plastering PDF Summary Items
+plaster_summary_items = [
+    f"Effective Area: {effective_area:,.2f} Sq. Ft",
+    f"Plaster Thickness: {p_thick} mm",
+    f"Plaster Cement: {p_cement_bags:,.2f} Bags (BDT {p_cost_c:,.2f})",
+    f"Plaster Sand: {p_sand_cft:,.2f} CFT (BDT {p_cost_s:,.2f})",
+]
 
-    st.download_button("📄 Download Section Report (.txt)", data=plaster_report, file_name="Plastering_Report.txt")
+# Plastering PDF Generation
+plaster_pdf = generate_pdf_report(
+    title="Plastering Estimate",
+    engineer_name=engineer_name,
+    total_cost=total_plaster_cost,
+    summary_items=plaster_summary_items,
+)
+
+# PDF Download Button
+st.download_button(
+    label="📄 Download Section Report (.pdf)",
+    data=plaster_pdf,
+    file_name="Plastering_Report.pdf",
+    mime="application/pdf",
+)
 
 # ---------------------------------------------------------
 # 7. FORMWORK & SHUTTERING ESTIMATOR
@@ -436,13 +564,28 @@ elif st.session_state["calc_type"] == "🪵 Formwork & Shuttering":
 
     st.success(f"💰 Total Formwork Cost: BDT {formwork_cost:,.2f}")
 
-    fw_report = get_download_report("Formwork & Shuttering Estimate", {
-        "Shuttering Area": f"{shutter_area:,.2f} Sq. Ft",
-        "Plywood Sheets Equivalent": f"{plywood_sheets:,.1f} Sheets",
-        "Unit Rate": f"BDT {shutter_rate_sqft}/Sq. Ft"
-    }, formwork_cost)
+  # Formwork PDF Summary Items
+fw_summary_items = [
+    f"Shuttering Area: {shutter_area:,.2f} Sq. Ft",
+    f"Plywood Sheets Equivalent: {plywood_sheets:,.1f} Sheets",
+    f"Unit Rate: BDT {shutter_rate_sqft}/Sq. Ft",
+]
 
-    st.download_button("📄 Download Section Report (.txt)", data=fw_report, file_name="Formwork_Report.txt")
+# Formwork PDF Generation
+fw_pdf = generate_pdf_report(
+    title="Formwork & Shuttering Estimate",
+    engineer_name=engineer_name,
+    total_cost=formwork_cost,
+    summary_items=fw_summary_items,
+)
+
+# PDF Download Button
+st.download_button(
+    label="📄 Download Section Report (.pdf)",
+    data=fw_pdf,
+    file_name="Formwork_Report.pdf",
+    mime="application/pdf",
+)
 
 # ---------------------------------------------------------
 # 8. MASTER SUMMARY & PDF REPORT
@@ -477,20 +620,27 @@ elif st.session_state["calc_type"] == "📊 Master Summary & PDF Report":
     st.table(df_summary)
     st.markdown(f"### **Total Estimated Project Cost: BDT {total_project_cost:,.2f}**")
 
-    master_text = "=======================================================\n"
-    master_text += "        CIVICOST AI - MASTER ESTIMATE REPORT          \n"
-    master_text += "=======================================================\n\n"
-    for idx, row in df_summary.iterrows():
-        master_text += f"{row['Work Category']:<35}: BDT {row['Estimated Cost (BDT)']:>12,.2f}\n"
-    master_text += "-" * 55 + "\n"
-    master_text += f"TOTAL PROJECT ESTIMATED COST           : BDT {total_project_cost:>12,.2f}\n"
-    master_text += "=======================================================\n"
+  # Master PDF Summary Items Creation
+master_summary_items = [
+    f"{row['Work Category']}: BDT {row['Estimated Cost (BDT)']:,.2f}"
+    for _, row in df_summary.iterrows()
+]
 
-    m_col1, m_col2 = st.columns(2)
-    with m_col1:
-        st.download_button("📥 Download Master Summary Report (.txt)", data=master_text, file_name="Master_Project_Report.txt")
-    with m_col2:
-        st.info("💡 PDF Report Tip: Browser-er **Ctrl + P** ba **Cmd + P** press kore full page-ti clean PDF file hisebe save korte paren.")
+# Master PDF Generation
+master_pdf = generate_pdf_report(
+    title="Master Cost Consolidation Report",
+    engineer_name=engineer_name,
+    total_cost=total_project_cost,
+    summary_items=master_summary_items,
+)
+
+# PDF Download Button
+st.download_button(
+    label="📄 Download Master Summary Report (.pdf)",
+    data=master_pdf,
+    file_name="Master_Project_Report.pdf",
+    mime="application/pdf",
+)
 
 # ---------------------------------------------------------
 # 9. USER RATING & FEEDBACK SYSTEM
