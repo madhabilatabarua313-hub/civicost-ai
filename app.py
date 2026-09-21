@@ -25,6 +25,11 @@ st.markdown("""
         height: 0%;
         position: fixed;
     }
+
+[data-testid="stAppDeployButton"] {
+        display: none !important;
+    }
+    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
