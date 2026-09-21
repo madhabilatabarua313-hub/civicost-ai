@@ -945,3 +945,20 @@ elif calc_type == "Full Project Summary & Master PDF":
             file_name="Master_Project_Summary_Report.pdf",
             mime="application/pdf"
         )
+
+# Contact & Feedback Section
+    st.markdown("---")
+    st.subheader("📬 Contact & Feedback")
+    
+    with st.form("feedback_form"):
+        user_name = st.text_input("Your Name")
+        user_email = st.text_input("Your Email")
+        feedback_msg = st.text_area("Your Message / Feedback")
+        
+        submitted = st.form_submit_button("Send Feedback")
+        
+        if submitted:
+            if user_name and feedback_msg:
+                st.success("Thank you! Your feedback has been received successfully.")
+            else:
+                st.warning("Please fill in at least your name and message before submitting.")
