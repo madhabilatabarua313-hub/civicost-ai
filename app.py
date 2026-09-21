@@ -97,6 +97,100 @@ calc_type = st.sidebar.radio(
 st.sidebar.divider()
 st.sidebar.subheader("⚙️ Local Market Rates (BDT)")
 
+# (Keep your existing local market rate inputs here)
+
+
+# ==========================================
+# 2. Main Routing & Modules Section
+# ==========================================
+
+if calc_type == "🏠 Project Control Center (Home)":
+    st.title("🏗️ Welcome to CivicoSt AI")
+    st.subheader("Smart Structural Material & Cost Estimation Assistant")
+    
+    st.markdown("""
+    **Civicost AI** is a specialized civil engineering tool designed for fast and accurate structural material estimation according to local standards.
+    """)
+    
+    st.divider()
+    
+    # Quick Stats Overview
+    st.markdown("### 📊 Project Overview & Quick Stats")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="Total Estimated Cost", value=f"BDT {st.session_state.get('total_project_cost', 0.0):,.2f}")
+    with col2:
+        st.metric(label="Active Modules", value="6 Modules")
+    with col3:
+        st.metric(label="Status", value="Ready for Estimation 🟢")
+
+    st.markdown("---")
+    st.markdown("### 🚀 Estimation Modules")
+    st.markdown("Select any module below or use the sidebar menu to start calculating:")
+
+    # Card Grid Layout
+    card_col1, card_col2, card_col3 = st.columns(3)
+
+    with card_col1:
+        st.info("### ⛏️ Excavation\nCalculate earthwork, soil cutting, and soling requirements easily.")
+        if st.button("Open Excavation Module"):
+            st.warning("Please select 'Excavation & Soling' from the sidebar menu.")
+
+        st.markdown("---")
+        st.info("### 🧱 Brickwork\nEstimate brick quantities and mortar ratios for walls.")
+        if st.button("Open Brickwork Module"):
+            st.warning("Please select 'Brickwork Estimator' from the sidebar menu.")
+
+    with card_col2:
+        st.info("### 🧱 Concrete Works\nCompute cement, sand, stone chips, and total volume.")
+        if st.button("Open Concrete Module"):
+            st.warning("Please select 'Concrete Volume' from the sidebar menu.")
+
+        st.markdown("---")
+        st.info("### 🎨 Plastering\nCalculate surface area and mortar quantities for wall plaster.")
+        if st.button("Open Plastering Module"):
+            st.warning("Please select 'Plastering Estimator' from the sidebar menu.")
+
+    with card_col3:
+        st.info("### 🔩 Rebar (Steel)\nDetermine steel weight, bar bending, and cost estimates.")
+        if st.button("Open Rebar Module"):
+            st.warning("Please select 'Rebar (Steel)' from the sidebar menu.")
+
+        st.markdown("---")
+        st.info("### 🪵 Formwork\nEstimate shuttering and wooden formwork areas.")
+        if st.button("Open Formwork Module"):
+            st.warning("Please select 'Formwork & Shuttering' from the sidebar menu.")
+
+elif calc_type == "⛏️ Excavation & Soling":
+    st.header("⛏️ Excavation & Soling Estimator")
+    # Insert your original excavation calculation code here
+
+elif calc_type == "🧱 Concrete Volume":
+    st.header("🧱 Concrete Volume & Material Calculator")
+    # Insert your original concrete calculation code here
+
+elif calc_type == "🔩 Rebar (Steel)":
+    st.header("🔩 Reinforcement Steel (Rebar) Estimator")
+    # Insert your original rebar calculation code here
+
+elif calc_type == "🧱 Brickwork Estimator":
+    st.header("🧱 Brickwork Estimator")
+    # Insert your original brickwork calculation code here
+
+elif calc_type == "🎨 Plastering Estimator":
+    st.header("🎨 Plastering Estimator")
+    # Insert your original plastering calculation code here
+
+elif calc_type == "🪵 Formwork & Shuttering":
+    st.header("🪵 Formwork & Shuttering Estimator")
+    # Insert your original formwork calculation code here
+
+elif calc_type == "📊 Master Summary & PDF Report":
+    st.header("📊 Full Project Summary & Master PDF Report")
+    # Insert your original summary and PDF generation code here
+st.sidebar.divider()
+st.sidebar.subheader("⚙️ Local Market Rates (BDT)")
+
 # Dynamic Material Price Inputs with Default Bangladesh Rates
 price_cement = st.sidebar.number_input("Cement Price (per bag - BDT)", value=550.0, step=5.0)
 price_sand = st.sidebar.number_input("Sand Price (per CFT - BDT)", value=45.0, step=1.0)
