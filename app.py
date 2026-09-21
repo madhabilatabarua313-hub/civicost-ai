@@ -780,8 +780,7 @@ elif calc_type == "Formwork & Shuttering Estimator":
         m1.metric("Contact Surface Area", f"{total_contact_area:,.2f} Sq.Ft")
         m2.metric("Gross Area (inc. Wastage)", f"{gross_shuttering_area:,.2f} Sq.Ft")
         m3.metric("Plywood Sheets (8'x4')", f"{plywood_sheets_count:,.1f} Pcs")
-        m4.metric("Total Shuttering Cost", f"BDT {total_shuttering_cost:,.2f}")
-
+        m4.metric("Total Shuttering Cost (BDT)", f"{total_shuttering_cost:,.2f}")
         st.divider()
 
         summary_df = pd.DataFrame({
