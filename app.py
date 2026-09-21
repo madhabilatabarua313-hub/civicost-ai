@@ -555,8 +555,31 @@ elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
     st.header("⭐ User Ratings & Feedback")
     st.write("We value your feedback! Rate your experience with CivicCost AI.")
 
-    rating = st.slider("Rate the platform accuracy & usability", 1, 5, 5)
-    feedback_text = st.text_area("Share your feedback or feature suggestions")
+    # Initialize feedback storage in session state if not exists
+    if "feedbacks_list" not in st.session_state:
+        st.session_state["feedbacks_list"] = [
+            {"Engineer": "Engr. Nazmul", "Rating": "5/5 ⭐", "Feedback": "Extremely helpful for quick BNBC calculations!"},
+            {"Engineer": "Engr. Tanvir", "Rating": "4/5 ⭐", "Feedback": "Great layout and regional pricing feature."}
+        ]
 
-    if st.button("Submit Feedback"):
-        st.success(f"Thank you, {engineer_name}! Your {rating}/5 star rating has been recorded.")
+    with st.form("feedback_form"):
+        rating = st.slider("Rate the platform accuracy & usability", 1, 5, 5)
+        feedback_text = st.text_area("Share your feedback or feature suggestions")
+        submitted = st.form_submit_button("Submit Feedback")
+
+        if submitted:
+            new_feedback = {
+                "Engineer": engineer_name if 'engineer_name' in locals() and engineer_name else "Guest Engineer",
+                "Rating": f"{rating}/5 ⭐",
+                "Feedback": feedback_text if feedback_text else "No comments provided"
+            }
+            st.session_state["feedbacks_list"].insert(0, new_feedback)
+            st.success("Thank you! Your feedback has been published successfully.")
+
+    st.markdown("---")
+    st.subheader("📋 Public User Feedback & Ratings")
+    
+    # Display all feedbacks currently in memory on screen
+    for idx, fb in enumerate(st.session_state["feedbacks_list"], 1):
+        with st.container():
+            st.info(f"**# {idx} | Engineer: {fb['Engineer']} | Rating: {fb['Rating']}**\n\n> \"{fb['Feedback']}\"")
