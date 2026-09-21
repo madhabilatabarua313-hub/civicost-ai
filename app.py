@@ -240,21 +240,21 @@ ex_pdf = generate_pdf_report(
     title="Excavation & Soling Estimate",
     engineer_name=engineer_name,
     total_cost=total_ex_soling_cost,
-    summary_items=ex_summary_items,
+    summary_items=ex_summary_items
 )
 
 # PDF Download Button
 st.download_button(
-    label="📄 Download Section Report (.pdf)",
+    label="Download Section Report (.pdf)",
     data=ex_pdf,
     file_name="Excavation_Report.pdf",
     mime="application/pdf"
 )
 
+
 # 3. ADVANCED CONCRETE VOLUME (Beam, Column, Slab, Stair)
-# ---------------------------------------------------------
+# --------------------------------------------------
 elif st.session_state["calc_type"] == "🧱 Concrete Volume (Beam, Column, Slab, Stair)":
-    st.header("🧱 Multi-Member Concrete Estimator")
 
     struct_type = st.selectbox("Select Structural Element:", ["Slab / Footing", "Column", "Beam", "Staircase"])
 
