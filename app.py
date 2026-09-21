@@ -243,8 +243,8 @@ ex_pdf = generate_pdf_report(
     summary_items=ex_summary_items,
 )
 
-    # PDF Download Button
-    st.download_button(
+     # PDF Download Button
+     st.download_button(
         label="Download Section Report (.pdf)",
         data=ex_pdf,
         file_name="Excavation_Report.pdf",
