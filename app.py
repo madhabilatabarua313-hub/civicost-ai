@@ -119,7 +119,14 @@ if calc_type == "Home / Overview":
     # Feature Overview Cards
     st.markdown("### 🛠️ Available Estimator Modules")
     col1, col2 = st.columns(2)
-    with col1:
+   with col1:
+        st.info("""
+        #### ⛏️ Excavation & Soling Estimator
+        - Earthwork excavation volume & safety allowance.
+        - Single & Double Flat Brick Soling (FBS) count.
+        - Lean Concrete (CC) breakdown & backfilling volume.
+        """)
+
         st.info("""
         #### 🧱 Concrete Mix Estimator
         - Supports Slabs, Beams, Columns, Footings & Staircases.
