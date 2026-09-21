@@ -994,22 +994,29 @@ elif calc_type == "Full Project Summary & Master PDF":
         # You can change your password here if needed
         if admin_password == "civicost123":
             st.success("Access Granted!")
-            file_path = "feedback.csv"
             
-            if os.path.exists(file_path):
+            try:
                 import pandas as pd
-                df_feedback = pd.read_csv(file_path)
-                st.dataframe(df_feedback)
+                import os
                 
-                # Download button
-                with open(file_path, "rb") as f:
-                    st.download_button(
-                        label="Download Feedback CSV",
-                        data=f,
-                        file_name="feedback.csv",
-                        mime="text/csv"
-                    )
-            else:
-                st.info("No feedback received yet.")
+                file_path = "feedback.csv"
+                
+                if os.path.exists(file_path):
+                    df_feedback = pd.read_csv(file_path)
+                    st.dataframe(df_feedback)
+                    
+                    # Download button
+                    with open(file_path, "rb") as f:
+                        st.download_button(
+                            label="Download Feedback CSV",
+                            data=f,
+                            file_name="feedback.csv",
+                            mime="text/csv"
+                        )
+                else:
+                    st.info("No feedback received yet.")
+            except Exception as e:
+                st.error(f"An error occurred while loading feedback: {e}")
+                
         elif admin_password:
             st.error("Incorrect Password!")
