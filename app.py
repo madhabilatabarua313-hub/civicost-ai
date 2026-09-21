@@ -243,7 +243,7 @@ ex_pdf = generate_pdf_report(
     summary_items=ex_summary_items,
 )
 
-# PDF Download Button
+    # PDF Download Button
     st.download_button("Download Section Report (.pdf)", ex_pdf, "Excavation_Report.pdf", "application/pdf")
 
 # 3. ADVANCED CONCRETE VOLUME (Beam, Column, Slab, Stair)
