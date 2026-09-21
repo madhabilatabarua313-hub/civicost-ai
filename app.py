@@ -433,7 +433,7 @@ if calc_type == "Concrete Volume & Material Calculator":
         total_cost = (cement_bags * cement_price) + (sand_cft * sand_price) + (chips_cft * chips_price)
 
         st.session_state["concrete_summary"] = {
-    "total_cost": total_concrete_cost
+    "total_cost": total_cost
 }
         st.success(f"**Total Concrete Volume ({num_elements} {element_type}s):** {total_wet_vol:.2f} CFT (Includes {wastage_pct}% Wastage)")
         
