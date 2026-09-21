@@ -959,6 +959,29 @@ elif calc_type == "Full Project Summary & Master PDF":
         
         if submitted:
             if user_name and feedback_msg:
-                st.success("Thank you! Your feedback has been received successfully.")
+                try:
+                    import pandas as pd
+                    import os
+                    from datetime import datetime
+                    
+                    # Feedback data ready kora
+                    feedback_data = pd.DataFrame([{
+                        "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "Name": user_name,
+                        "Email": user_email,
+                        "Message": feedback_msg
+                    }])
+                    
+                    file_path = "feedback.csv"
+                    
+                    # File na thakle create hobe, thakle append hobe
+                    if not os.path.exists(file_path):
+                        feedback_data.to_csv(file_path, index=False)
+                    else:
+                        feedback_data.to_csv(file_path, mode='a', header=False, index=False)
+                    
+                    st.success("Thank you! Your feedback has been received and saved successfully.")
+                except Exception as e:
+                    st.error(f"An error occurred while saving feedback: {e}")
             else:
                 st.warning("Please fill in at least your name and message before submitting.")
