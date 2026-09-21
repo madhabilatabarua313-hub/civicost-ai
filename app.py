@@ -103,17 +103,22 @@ if calc_type == "Home / Overview":
     
     st.divider()
     
-    # Active Market Price Metrics
+   # Active Market Price Metrics
     st.markdown("### 💵 Active Market Rates")
     m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Cement", f"BDT {price_cement:.0f}/bag")
-    m2.metric("Sand", f"BDT {price_sand:.0f}/cft")
-    m3.metric("Aggregate", f"BDT {price_aggregate:.0f}/cft")
-    m4.metric("Steel", f"BDT {price_rebar:.0f}/kg")
-    m5.metric("Brick", f"BDT {price_brick:.1f}/pc")
     
+    with m1:
+        st.markdown(f"**Cement**\n\nBDT {price_cement:.0f}/bag")
+    with m2:
+        st.markdown(f"**Sand**\n\nBDT {price_sand:.0f}/cft")
+    with m3:
+        st.markdown(f"**Aggregate**\n\nBDT {price_aggregate:.0f}/cft")
+    with m4:
+        st.markdown(f"**Steel**\n\nBDT {price_rebar:.0f}/kg")
+    with m5:
+        st.markdown(f"**Brick**\n\nBDT {price_brick:.1f}/pc")
+
     st.caption("💡 *You can adjust these material rates anytime using the sidebar on the left.*")
-    
     st.divider()
     
 # Feature Overview Cards
