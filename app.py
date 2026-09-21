@@ -75,7 +75,9 @@ calc_type = st.sidebar.selectbox(
             "Concrete Volume & Material Calculator",
             "Rebar (Steel) Calculator",
             "Brickwork Estimator",
-            "Plastering Estimator"
+            "Plastering Estimator",
+       "Plastering Estimator",
+            "Formwork & Shuttering Estimator"
         ]
 )
 
@@ -670,3 +672,136 @@ elif calc_type == "Plastering Estimator":
             file_name="plastering_report.pdf",
             mime="application/pdf"
         )
+elif calc_type == "Formwork & Shuttering Estimator":
+    st.subheader("🪵 Formwork & Shuttering Area Estimator")
+    st.write("Calculate shuttering contact area, required plywood/steel sheets, props, and associated material & labor costs.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### 📐 Element Selection & Dimensions")
+        shutter_element = st.radio(
+            "Select Structural Element:",
+            ["Slab", "Beam", "Column", "Footing", "Staircase"],
+            horizontal=True
+        )
+
+        num_elements = st.number_input("Number of Identical Elements", min_value=1, value=5, step=1)
+
+        if shutter_element == "Slab":
+            slab_len = st.number_input("Slab Length (Ft)", min_value=0.1, value=15.0, step=0.5)
+            slab_wid = st.number_input("Slab Width (Ft)", min_value=0.1, value=12.0, step=0.5)
+            slab_thick = st.number_input("Slab Thickness (Inches)", min_value=1.0, value=5.0, step=0.5)
+        
+        elif shutter_element == "Beam":
+            beam_len = st.number_input("Beam Length (Ft)", min_value=0.1, value=15.0, step=0.5)
+            beam_width = st.number_input("Beam Width (Inches)", min_value=1.0, value=10.0, step=0.5)
+            beam_depth = st.number_input("Beam Depth (Inches)", min_value=1.0, value=15.0, step=0.5)
+            slab_thick_beam = st.number_input("Adjoining Slab Thickness (Inches)", min_value=0.0, value=5.0, step=0.5)
+
+        elif shutter_element == "Column":
+            col_len = st.number_input("Column Length / Cross-section C1 (Inches)", min_value=1.0, value=12.0, step=1.0)
+            col_wid = st.number_input("Column Width / Cross-section C2 (Inches)", min_value=1.0, value=15.0, step=1.0)
+            col_height = st.number_input("Clear Height of Column (Ft)", min_value=0.1, value=10.0, step=0.5)
+
+        elif shutter_element == "Footing":
+            foot_len = st.number_input("Footing Length (Ft)", min_value=0.1, value=5.0, step=0.5)
+            foot_wid = st.number_input("Footing Width (Ft)", min_value=0.1, value=5.0, step=0.5)
+            foot_depth = st.number_input("Footing Depth (Inches)", min_value=1.0, value=18.0, step=1.0)
+
+        elif shutter_element == "Staircase":
+            flight_width = st.number_input("Stair Flight Width (Ft)", min_value=0.1, value=3.5, step=0.5)
+            waist_len = st.number_input("Inclined Waist Slab Length (Ft)", min_value=0.1, value=10.0, step=0.5)
+            num_risers = st.number_input("Number of Steps / Risers", min_value=1, value=10, step=1)
+            riser_height = st.number_input("Riser Height (Inches)", min_value=1.0, value=6.0, step=0.5)
+
+    with col2:
+        st.markdown("##### 🛠️ Shuttering Material & Cost Parameters")
+        shutter_type = st.selectbox("Shuttering Material Type", ["Plywood (18mm)", "Steel / MS Sheet", "Wooden Plank"])
+        sheet_reuse = st.number_input("Expected Sheet Reuses (Times)", min_value=1, value=4, step=1)
+        wastage_margin = st.number_input("Cutting & Fitting Wastage (%)", min_value=0.0, value=5.0, step=1.0)
+        
+        st.markdown("##### 💵 Local Rates (BDT)")
+        rate_shuttering_material = st.number_input("Shuttering Material Rate (per Sq.Ft - BDT)", min_value=0.0, value=45.0, step=5.0)
+        rate_labor = st.number_input("Formwork Labor & Fitting Rate (per Sq.Ft - BDT)", min_value=0.0, value=25.0, step=5.0)
+
+    st.divider()
+
+    if st.button("Calculate Formwork & Shuttering Area"):
+        total_contact_area = 0.0
+
+        if shutter_element == "Slab":
+            bottom_area = slab_len * slab_wid
+            edge_area = 2 * (slab_len + slab_wid) * (slab_thick / 12.0)
+            total_contact_area = (bottom_area + edge_area) * num_elements
+
+        elif shutter_element == "Beam":
+            net_depth_ft = max(0.0, (beam_depth - slab_thick_beam) / 12.0)
+            bottom_area = (beam_width / 12.0) * beam_len
+            side_area = 2 * net_depth_ft * beam_len
+            total_contact_area = (bottom_area + side_area) * num_elements
+
+        elif shutter_element == "Column":
+            perimeter_ft = 2 * (col_len + col_wid) / 12.0
+            total_contact_area = (perimeter_ft * col_height) * num_elements
+
+        elif shutter_element == "Footing":
+            perimeter_ft = 2 * (foot_len + foot_wid)
+            total_contact_area = (perimeter_ft * (foot_depth / 12.0)) * num_elements
+
+        elif shutter_element == "Staircase":
+            bottom_waist = waist_len * flight_width
+            riser_sides = num_risers * flight_width * (riser_height / 12.0)
+            total_contact_area = (bottom_waist + riser_sides) * num_elements
+
+        gross_shuttering_area = total_contact_area * (1 + wastage_margin / 100.0)
+        effective_sheet_area = gross_shuttering_area / sheet_reuse
+        plywood_sheets_count = effective_sheet_area / 32.0
+
+        cost_material = effective_sheet_area * rate_shuttering_material
+        cost_labor = gross_shuttering_area * rate_labor
+        total_shuttering_cost = cost_material + cost_labor
+
+        st.session_state["shuttering_data"] = {
+            "element": shutter_element,
+            "num_elements": num_elements,
+            "total_contact_area": total_contact_area,
+            "gross_shuttering_area": gross_shuttering_area,
+            "effective_sheet_area": effective_sheet_area,
+            "plywood_sheets_count": plywood_sheets_count,
+            "cost_material": cost_material,
+            "cost_labor": cost_labor,
+            "total_cost": total_shuttering_cost
+        }
+
+        st.success("✔ Formwork & Shuttering Area Calculation Completed!")
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Contact Surface Area", f"{total_contact_area:,.2f} Sq.Ft")
+        m2.metric("Gross Area (inc. Wastage)", f"{gross_shuttering_area:,.2f} Sq.Ft")
+        m3.metric("Plywood Sheets (8'x4')", f"{plywood_sheets_count:,.1f} Pcs")
+        m4.metric("Total Shuttering Cost", f"BDT {total_shuttering_cost:,.2f}")
+
+        st.divider()
+
+        summary_df = pd.DataFrame({
+            "Item Description": [
+                f"Total Shuttering Contact Area ({shutter_element})",
+                f"Gross Area (incl. {wastage_margin}% Wastage)",
+                f"Net Material Purchase Area (Factoring {sheet_reuse}x Reuse)",
+                "Standard Plywood Sheets Required (8' x 4')",
+                "Formwork Material Cost",
+                "Formwork Labor & Fitting Cost"
+            ],
+            "Quantity / Value": [
+                f"{total_contact_area:,.2f} Sq.Ft",
+                f"{gross_shuttering_area:,.2f} Sq.Ft",
+                f"{effective_sheet_area:,.2f} Sq.Ft",
+                f"{plywood_sheets_count:,.1f} Pcs",
+                f"BDT {cost_material:,.2f}",
+                f"BDT {cost_labor:,.2f}"
+            ]
+        })
+
+        st.table(summary_df)
+        st.info(f"💰 **Total Estimated Formwork Expense:** BDT {total_shuttering_cost:,.2f}")
