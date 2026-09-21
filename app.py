@@ -80,7 +80,7 @@ def generate_pdf(project_title, summary_data):
 # 1. Sidebar Navigation & Market Rates
 # ==========================================
 st.sidebar.title("📌 Navigation")
-app_mode = st.sidebar.radio(
+calc_type = st.sidebar.radio(
     "Choose Calculation Type:",
     [
         "🏠 Project Control Center (Home)",
@@ -108,7 +108,7 @@ price_brick = st.sidebar.number_input("Brick Price (per Piece - BDT)", value=12.
 # ==========================================
 # 2. Home / Overview Section
 # ==========================================
-if calc_type == "Home / Overview":
+if calc_type == "🏠 Project Control Center (Home)":
     st.title("🏗️ Welcome to CiviCost AI")
     st.subheader("Smart Structural Material & Cost Estimation Assistant")
     
