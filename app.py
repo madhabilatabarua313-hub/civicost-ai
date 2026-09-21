@@ -236,19 +236,19 @@ ex_summary_items = [
 ]
 
 # PDF Generation & Download
-    ex_pdf = generate_pdf_report(
-        title="Excavation & Soling Estimate",
-        engineer_name=engineer_name,
-        total_cost=total_ex_soling_cost,
-        summary_items=ex_summary_items
-    )
+ex_pdf = generate_pdf_report(
+    title="Excavation & Soling Estimate",
+    engineer_name=engineer_name,
+    total_cost=total_ex_soling_cost,
+    summary_items=ex_summary_items
+)
 
-    st.download_button(
-        label="Download Section Report (.pdf)",
-        data=ex_pdf,
-        file_name="Excavation_Report.pdf",
-        mime="application/pdf"
-    )
+st.download_button(
+    label="Download Section Report (.pdf)",
+    data=ex_pdf,
+    file_name="Excavation_Report.pdf",
+    mime="application/pdf"
+)
 
 # 3. ADVANCED CONCRETE VOLUME (Beam, Column, Slab, Stair)
 # --------------------------------------------------
