@@ -1,4 +1,4 @@
 streamlit
+reportlab
 google-generativeai
 pandas
-fpdf2
