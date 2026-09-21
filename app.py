@@ -674,7 +674,7 @@ elif calc_type == "Plastering Estimator":
         total_cost = (cement_bags * cement_price) + (sand_cft * sand_price)
 
         st.session_state["plaster_summary"] = {
-    "total_cost": total_plaster_cost
+    "total_cost": total_cost
 }
         st.success(f"**Total Plaster Area:** {plaster_area} Sq. Ft. (Wastage Included: {wastage_pct}%)")
         
