@@ -39,9 +39,17 @@ def generate_pdf(project_title, summary_data):
     # Table Body
     pdf.set_font("Helvetica", "", 10)
     for row in summary_data:
-        item = clean_text(str(row.get("Item", "")))
-        qty = clean_text(str(row.get("Quantity", "")))
-        cost = clean_text(str(row.get("Cost (BDT)", "")))
+        # Handle both dictionary and list/tuple rows safely
+        if isinstance(row, dict):
+            item = clean_text(str(row.get("Item", "")))
+            qty = clean_text(str(row.get("Quantity", "")))
+            cost = clean_text(str(row.get("Cost (BDT)", row.get("Cost", ""))))
+        elif isinstance(row, (list, tuple)):
+            item = clean_text(str(row[0])) if len(row) > 0 else ""
+            qty = clean_text(str(row[1])) if len(row) > 1 else ""
+            cost = clean_text(str(row[2])) if len(row) > 2 else ""
+        else:
+            item, qty, cost = "", "", ""
         
         pdf.cell(70, 8, item, border=1)
         pdf.cell(60, 8, qty, border=1)
