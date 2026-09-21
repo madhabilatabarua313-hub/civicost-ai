@@ -817,7 +817,7 @@ elif calc_type == "Full Project Summary & Master PDF":
     shutter_data = st.session_state.get("shuttering_data")
 
     project_title = st.text_input("Project Name / Title", value="Multi-Story Residential Building Estimate")
-    engineer_name = st.text_input("Prepared By (Engineer / Estimator Name)", value="Madhabilata Barua, B.Sc. Engineer")
+    engineer_name = st.text_input("Prepared By (Engineer / Estimator Name)", value="", placeholder="Enter Estimator / Engineer Name")
 
     st.divider()
     st.markdown("##### 📋 Summary of Calculated Modules")
