@@ -386,21 +386,21 @@ elif st.session_state["calc_type"] == "🏗️ Sub-structure Excavation & Soling
     st.markdown(f"### 💰 **Total Section Cost: BDT {total_ex_cost:,.2f}**")
 
     # Formula Expander
-with st.expander("📐 View Engineering Formula & Sample Calculation"):
-    st.markdown(f"""
-    **1. Earth Excavation Volume:**  
-    $$\\text{{Volume}} = {total_length} \\text{{ ft}} \\times {width} \\text{{ ft}} \\times {depth} \\text{{ ft}} = \\mathbf{{{vol_cft:.2f} \\text{{ CFT}}}}$$
+    with st.expander("📐 View Engineering Formula & Sample Calculation"):
+        st.markdown(f"""
+        **1. Earth Excavation Volume:**  
+        $$\\text{{Volume}} = {total_length} \\text{{ ft}} \\times {width} \\text{{ ft}} \\times {depth} \\text{{ ft}} = \\mathbf{{{vol_cft:.2f} \\text{{ CFT}}}}$$
 
-    **2. Flat Brick Soling Requirement (BNBC Standard):**  
-    - BNBC Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
-    """)
-    
-    area = total_length * width
-    multiplier = 3.0 if 'Single' in soling_type else 6.0
-    
-    st.latex(
-        rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times {wastage_factor:.2f} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
-    )
+        **2. Flat Brick Soling Requirement (BNBC Standard):**  
+        - BNBC Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
+        """)
+        
+        area = total_length * width
+        multiplier = 3.0 if 'Single' in soling_type else 6.0
+        
+        st.latex(
+            rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times {wastage_factor:.2f} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
+        )
 
     ex_summary = [
         {"Item": "Earth Excavation Work", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
