@@ -162,96 +162,303 @@ if calc_type == "🏠 Project Control Center (Home)":
             st.warning("Please select 'Formwork & Shuttering' from the sidebar menu.")
 
 elif calc_type == "⛏️ Excavation & Soling":
-    st.header("⛏️ Excavation & Soling Estimator")
-    st.markdown("Calculate earthwork volume for foundation trenches and flat soling materials.")
-    
-    col_ex1, col_ex2 = st.columns(2)
-    with col_ex1:
-        exc_length = st.number_input("Length (ft)", min_value=0.0, value=10.0, key="exc_l")
-        exc_width = st.number_input("Width (ft)", min_value=0.0, value=10.0, key="exc_w")
-    with col_ex2:
-        exc_depth = st.number_input("Depth / Height (ft)", min_value=0.0, value=5.0, key="exc_d")
-        
-    if st.button("Calculate Excavation"):
-        exc_vol = exc_length * exc_width * exc_depth
-        exc_cost = exc_vol * 15.0 # Estimated excavation cost per CFT
-        st.session_state["excavation_summary"] = exc_cost
-        st.success(f"Total Excavation Volume: {exc_vol:,.2f} CFT")
-        st.info(f"Estimated Excavation Cost: BDT {exc_cost:,.2f}")
+        st.header("⛏️ Excavation, Soling & Sand Filling Estimator")
+        st.markdown("Calculate trench volume, backfilling, sand cushion, and brick flat/herringbone soling requirements.")
 
+        ex_col1, ex_col2 = st.columns(2)
+        with ex_col1:
+            ex_len = st.number_input("Trench Length (ft)", min_value=0.0, value=10.0, key="ex_l")
+            ex_wid = st.number_input("Trench Width (ft)", min_value=0.0, value=10.0, key="ex_w")
+            ex_dep = st.number_input("Excavation Depth (ft)", min_value=0.0, value=5.0, key="ex_d")
+        with ex_col2:
+            sand_thick = st.number_input("Sand Cushion Thickness (inch)", min_value=0.0, value=3.0, step=0.5)
+            soling_type = st.selectbox("Soling Type", ["Brick Flat Soling (BFS)", "Herringbone Bond Soling (HBB)"], index=0)
+            backfill_pct = st.slider("Backfilling Volume (% of excavation area)", min_value=0, max_value=80, value=40)
+
+        if st.button("Calculate Excavation & Soling", type="primary"):
+            excavation_vol_cft = ex_len * ex_wid * ex_dep
+            soling_area_sqft = ex_len * ex_wid
+            sand_vol_cft = soling_area_sqft * (sand_thick / 12.0)
+            backfill_vol_cft = excavation_vol_cft * (backfill_pct / 100.0)
+
+            bricks_per_sqft = 3.00 if "Flat" in soling_type else 3.75
+            total_soling_bricks = soling_area_sqft * bricks_per_sqft
+
+            cost_excavation = excavation_vol_cft * excavation_rate
+            cost_backfill = backfill_vol_cft * backfill_rate
+            cost_sand = sand_vol_cft * sand_price
+            cost_soling_bricks = total_soling_bricks * brick_price
+            
+            total_ex_soling_cost = cost_excavation + cost_backfill + cost_sand + cost_soling_bricks
+            
+            st.session_state["excavation_summary"] = cost_excavation + cost_backfill
+            st.session_state["soling_summary"] = cost_sand + cost_soling_bricks
+
+            st.markdown("---")
+            st.subheader("📊 Earthwork & Sub-base Results")
+
+            r_c1, r_c2, r_c3, r_c4 = st.columns(4)
+            with r_c1:
+                st.metric("Excavation Vol", f"{excavation_vol_cft:,.2f} CFT", f"BDT {cost_excavation:,.2f}")
+            with r_c2:
+                st.metric("Backfilling Vol", f"{backfill_vol_cft:,.2f} CFT", f"BDT {cost_backfill:,.2f}")
+            with r_c3:
+                st.metric("Sand Cushion", f"{sand_vol_cft:,.2f} CFT", f"BDT {cost_sand:,.2f}")
+            with r_c4:
+                st.metric("Soling Bricks", f"{total_soling_bricks:,.0f} Pcs", f"BDT {cost_soling_bricks:,.2f}")
+
+            st.success(f"💰 Total Excavation & Soling Sub-Structure Cost: BDT {total_ex_soling_cost:,.2f}")
 elif calc_type == "🧱 Concrete Volume":
+    stelif calc_type == "🧱 Concrete Volume":
     st.header("🧱 Concrete Volume & Material Calculator")
-    st.markdown("Compute cement, sand, and aggregate requirements for RCC/PCC works.")
+    st.markdown("Compute dry volume, cement bags, sand CFT, and aggregate CFT for RCC/PCC works.")
     
-    c_length = st.number_input("Structural Length (ft)", min_value=0.0, value=12.0, key="c_l")
-    c_width = st.number_input("Structural Width (ft)", min_value=0.0, value=10.0, key="c_w")
-    c_thickness = st.number_input("Thickness / Depth (ft)", min_value=0.0, value=0.5, key="c_t")
-    
-    if st.button("Calculate Concrete"):
-        wet_vol = c_length * c_width * c_thickness
-        dry_vol = wet_vol * 1.54 
-        total_bags = (dry_vol * 0.4) / 1.25 
-        concrete_cost = total_bags * cement_price
-        st.session_state["concrete_summary"] = concrete_cost
-        st.success(f"Wet Volume: {wet_vol:,.2f} CFT | Dry Volume: {dry_vol:,.2f} CFT")
-        st.info(f"Required Cement: {total_bags:,.1f} Bags (Estimated Cost: BDT {concrete_cost:,.2f})")
+    c_col1, c_col2 = st.columns(2)
+    with c_col1:
+        c_len = st.number_input("Structural Length (ft)", min_value=0.0, value=12.0, key="c_l")
+        c_wid = st.number_input("Structural Width (ft)", min_value=0.0, value=10.0, key="c_w")
+        c_dep = st.number_input("Thickness / Depth (ft)", min_value=0.0, value=0.5, key="c_d")
+    with c_col2:
+        mix_ratio = st.selectbox("Mix Ratio (Cement : Sand : Aggregate)", 
+                                 ["1:1.5:3 (M20 - Standard RCC)", "1:2:4 (M15 - PCC/General RCC)", "1:3:6 (M10 - Plain Concrete)"], 
+                                 index=0)
+        dry_vol_factor = st.number_input("Dry Volume Factor", min_value=1.3, max_value=1.6, value=1.54, step=0.01)
+        c_wastage = st.number_input("Wastage (%)", min_value=0.0, max_value=10.0, value=2.0)
 
+    if st.button("Calculate Concrete Materials", type="primary"):
+        wet_vol = c_len * c_wid * c_dep
+        wet_vol_total = wet_vol * (1 + c_wastage / 100.0)
+        dry_vol = wet_vol_total * dry_vol_factor
+
+        if "1:1.5:3" in mix_ratio:
+            r_c, r_s, r_a = 1.0, 1.5, 3.0
+        elif "1:2:4" in mix_ratio:
+            r_c, r_s, r_a = 1.0, 2.0, 4.0
+        else:
+            r_c, r_s, r_a = 1.0, 3.0, 6.0
+        
+        sum_ratio = r_c + r_s + r_a
+
+        cement_cft = (r_c / sum_ratio) * dry_vol
+        cement_bags = cement_cft / 1.25  # 1 Bag = 1.25 CFT
+        sand_cft = (r_s / sum_ratio) * dry_vol
+        agg_cft = (r_a / sum_ratio) * dry_vol
+
+        cost_cement = cement_bags * cement_price
+        cost_sand = sand_cft * sand_price
+        cost_agg = agg_cft * brick_chip_price
+        total_concrete_cost = cost_cement + cost_sand + cost_agg
+
+        st.session_state["concrete_summary"] = total_concrete_cost
+
+        st.markdown("---")
+        st.subheader("📊 Concrete Estimation Results")
+        st.info(f"📐 Wet Volume: **{wet_vol:,.2f} CFT** | Dry Volume (including {c_wastage}% wastage): **{dry_vol:,.2f} CFT**")
+
+        res_c1, res_c2, res_c3 = st.columns(3)
+        with res_c1:
+            st.metric("Cement Required", f"{cement_bags:,.2f} Bags", f"BDT {cost_cement:,.2f}")
+        with res_c2:
+            st.metric("Sand Required", f"{sand_cft:,.2f} CFT", f"BDT {cost_sand:,.2f}")
+        with res_c3:
+            st.metric("Aggregate Required", f"{agg_cft:,.2f} CFT", f"BDT {cost_agg:,.2f}")
+
+        st.success(f"💰 Total Concrete Material Cost: BDT {total_concrete_cost:,.2f}")
 elif calc_type == "🔩 Rebar (Steel)":
     st.header("🔩 Reinforcement Steel (Rebar) Estimator")
-    st.markdown("Estimate total rebar weight and cost based on structural volume.")
-    
-    rebar_vol = st.number_input("Total Concrete Volume for Steel Calculation (CFT)", min_value=0.0, value=100.0, key="r_vol")
-    steel_percentage = st.slider("Steel Ratio (%)", min_value=0.5, max_value=3.0, value=1.5, step=0.1)
-    
-    if st.button("Calculate Steel"):
-        steel_weight_kg = rebar_vol * steel_percentage * 2.5 
-        steel_cost = steel_weight_kg * rebar_price
+    st.markdown("Estimate total rebar weight (Kg & Ton) and binding wire requirements based on structural concrete volume.")
+
+    r_col1, r_col2 = st.columns(2)
+    with r_col1:
+        total_conc_vol = st.number_input("Total Concrete Volume for Steel Calculation (CFT)", min_value=0.0, value=100.0, key="st_v")
+        steel_ratio = st.slider("Steel Ratio (%)", min_value=0.5, max_value=4.0, value=1.5, step=0.1,
+                                help="Footing: 0.5-0.8%, Beam: 1.0-2.0%, Column: 1.5-2.5%, Slab: 0.7-1.0%")
+    with r_col2:
+        bar_dia = st.selectbox("Main Rebar Diameter (mm)", [8, 10, 12, 16, 20, 22, 25, 32], index=3)
+        binding_wire_rate = st.number_input("Binding Wire (Kg per Ton Rebar)", min_value=0.0, value=7.0)
+
+    if st.button("Calculate Steel", type="primary"):
+        conc_vol_cum = total_conc_vol * 0.0283168
+        steel_vol_cum = conc_vol_cum * (steel_ratio / 100.0)
+        steel_weight_kg = steel_vol_cum * 7850.0  # Density = 7850 kg/m3
+        steel_weight_ton = steel_weight_kg / 1000.0
+
+        binding_wire_kg = steel_weight_ton * binding_wire_rate
+        steel_cost = steel_weight_kg * rod_price
+        
         st.session_state["rebar_summary"] = steel_cost
-        st.success(f"Total Reinforcement Steel Weight: {steel_weight_kg:,.2f} kg")
-        st.info(f"Estimated Steel Cost: BDT {steel_cost:,.2f}")
 
+        st.markdown("---")
+        st.subheader("📊 Rebar Estimation Results")
+
+        st_c1, st_c2, st_c3 = st.columns(3)
+        with st_c1:
+            st.metric("Total Rebar Weight", f"{steel_weight_kg:,.2f} Kg", f"{steel_weight_ton:,.3f} Ton")
+        with st_c2:
+            st.metric("Binding Wire Needed", f"{binding_wire_kg:,.2f} Kg", "18-20 Gauge Wire")
+        with st_c3:
+            st.metric("Total Rebar Cost", f"BDT {steel_cost:,.2f}", f"@ {rod_price} BDT/Kg")
+
+        st.success(f"💰 Total Steel Estimation Cost: BDT {steel_cost:,.2f}")
+        
 elif calc_type == "🧱 Brickwork Estimator":
-    st.header("🧱 Brickwork Estimator")
-    st.markdown("Calculate brick numbers and mortar components for walls.")
-    
-    b_len = st.number_input("Wall Length (ft)", min_value=0.0, value=15.0, key="b_l")
-    b_hei = st.number_input("Wall Height (ft)", min_value=0.0, value=10.0, key="b_h")
-    
-    if st.button("Calculate Brickwork"):
-        wall_area = b_len * b_hei
-        bricks_needed = wall_area * 13.5 
-        brick_cost = bricks_needed * brick_price
-        st.session_state["brick_summary"] = brick_cost
-        st.success(f"Total Wall Area: {wall_area:,.2f} Sq. Ft.")
-        st.info(f"Required Bricks: {bricks_needed:,.0f} pieces (Estimated Cost: BDT {brick_cost:,.2f})")
+    st.header("🧱 Brickwork & Wall Estimator")
+    st.markdown("Calculate brick count, cement bags, and sand CFT with door/window deductions.")
 
+    b_col1, b_col2 = st.columns(2)
+    with b_col1:
+        w_len = st.number_input("Wall Length (ft)", min_value=0.0, value=15.0, key="bw_l")
+        w_height = st.number_input("Wall Height (ft)", min_value=0.0, value=10.0, key="bw_h")
+        w_thick = st.selectbox("Wall Thickness", ["5 inch (Single Brick)", "10 inch (Double Brick)"], index=0)
+    with b_col2:
+        deduction_area = st.number_input("Openings Deduction Area (Doors/Windows in Sq. Ft)", min_value=0.0, value=21.0)
+        b_ratio = st.selectbox("Mortar Mix Ratio (Cement : Sand)", ["1:4 (Rich Mix)", "1:5 (Standard)", "1:6 (General)"], index=1)
+
+    if st.button("Calculate Brickwork", type="primary"):
+        net_wall_area = max(0.0, (w_len * w_height) - deduction_area)
+
+        bricks_per_sqft = 5.0 if "5 inch" in w_thick else 10.0
+        total_bricks = net_wall_area * bricks_per_sqft
+
+        wall_vol_cft = net_wall_area * (0.4167 if "5 inch" in w_thick else 0.8333)
+        mortar_wet_vol = wall_vol_cft * 0.30
+        mortar_dry_vol = mortar_wet_vol * 1.54
+
+        if "1:4" in b_ratio:
+            mc, ms = 1.0, 4.0
+        elif "1:5" in b_ratio:
+            mc, ms = 1.0, 5.0
+        else:
+            mc, ms = 1.0, 6.0
+
+        b_cement_bags = ((mc / (mc + ms)) * mortar_dry_vol) / 1.25
+        b_sand_cft = (ms / (mc + ms)) * mortar_dry_vol
+
+        cost_b = total_bricks * brick_price
+        cost_c = b_cement_bags * cement_price
+        cost_s = b_sand_cft * sand_price
+        total_bw_cost = cost_b + cost_c + cost_s
+
+        st.session_state["brickwork_summary"] = total_bw_cost
+
+        st.markdown("---")
+        st.subheader("📊 Brickwork Estimation Breakdown")
+        st.info(f"📐 Net Wall Area: **{net_wall_area:,.2f} Sq. Ft** (Deducted {deduction_area} sq.ft openings)")
+
+        bw_c1, bw_c2, bw_c3 = st.columns(3)
+        with bw_c1:
+            st.metric("Number of Bricks", f"{total_bricks:,.0f} Pcs", f"BDT {cost_b:,.2f}")
+        with bw_c2:
+            st.metric("Mortar Cement", f"{b_cement_bags:,.2f} Bags", f"BDT {cost_c:,.2f}")
+        with bw_c3:
+            st.metric("Mortar Sand", f"{b_sand_cft:,.2f} CFT", f"BDT {cost_s:,.2f}")
+
+        st.success(f"💰 Total Brickwork Cost: BDT {total_bw_cost:,.2f}")
+        
 elif calc_type == "🎨 Plastering Estimator":
     st.header("🎨 Plastering Estimator")
-    st.markdown("Calculate surface finishing and mortar quantities for plastering.")
-    
-    p_area = st.number_input("Surface Area to Plaster (Sq. Ft.)", min_value=0.0, value=200.0, key="p_area")
-    if st.button("Calculate Plastering"):
-        plaster_cost = p_area * 35.0 
-        st.session_state["plaster_summary"] = plaster_cost
-        st.success(f"Total Surface Area: {p_area:,.2f} Sq. Ft.")
-        st.info(f"Estimated Plastering Cost: BDT {plaster_cost:,.2f}")
+    st.markdown("Calculate surface plaster material requirement based on thickness and mortar ratio.")
 
+    p_col1, p_col2 = st.columns(2)
+    with p_col1:
+        p_area = st.number_input("Surface Area to Plaster (Sq. Ft)", min_value=0.0, value=200.0, key="pl_a")
+        p_thick = st.selectbox("Plaster Thickness (mm)", [6, 12, 18, 20], index=1)
+    with p_col2:
+        p_mix = st.selectbox("Plaster Mortar Ratio (Cement : Sand)", ["1:3 (Rich Ceiling/External)", "1:4 (Internal Standard)", "1:6 (Rough)"], index=1)
+
+    if st.button("Calculate Plastering", type="primary"):
+        p_thick_ft = (p_thick / 25.4) / 12.0
+        p_wet_vol = p_area * p_thick_ft
+        p_dry_vol = p_wet_vol * 1.35
+
+        if "1:3" in p_mix:
+            pc, ps = 1.0, 3.0
+        elif "1:4" in p_mix:
+            pc, ps = 1.0, 4.0
+        else:
+            pc, ps = 1.0, 6.0
+
+        p_cement_bags = ((pc / (pc + ps)) * p_dry_vol) / 1.25
+        p_sand_cft = (ps / (pc + ps)) * p_dry_vol
+
+        p_cost_c = p_cement_bags * cement_price
+        p_cost_s = p_sand_cft * sand_price
+        total_plaster_cost = p_cost_c + p_cost_s
+
+        st.session_state["plaster_summary"] = total_plaster_cost
+
+        st.markdown("---")
+        st.subheader("📊 Plaster Estimation Breakdown")
+
+        pl_c1, pl_c2, pl_c3 = st.columns(3)
+        with pl_c1:
+            st.metric("Plaster Thickness", f"{p_thick} mm", f"Dry Vol: {p_dry_vol:.2f} CFT")
+        with pl_c2:
+            st.metric("Cement Required", f"{p_cement_bags:,.2f} Bags", f"BDT {p_cost_c:,.2f}")
+        with pl_c3:
+            st.metric("Sand Required", f"{p_sand_cft:,.2f} CFT", f"BDT {p_cost_s:,.2f}")
+
+        st.success(f"💰 Total Plastering Cost: BDT {total_plaster_cost:,.2f}")
+        
 elif calc_type == "🪵 Formwork & Shuttering":
     st.header("🪵 Formwork & Shuttering Estimator")
-    st.markdown("Compute shuttering surface area and board/timber requirements.")
-    
-    f_area = st.number_input("Shuttering Contact Area (Sq. Ft.)", min_value=0.0, value=150.0, key="f_area")
-    if st.button("Calculate Formwork"):
-        shutter_cost = f_area * 45.0 
-        st.session_state["shuttering_summary"] = shutter_cost
-        st.success(f"Total Formwork Area: {f_area:,.2f} Sq. Ft.")
-        st.info(f"Estimated Formwork Cost: BDT {shutter_cost:,.2f}")
+    st.markdown("Compute shuttering surface area, plywood sheets, and timber/prop requirements.")
 
+    s_col1, s_col2 = st.columns(2)
+    with s_col1:
+        shutter_area = st.number_input("Shuttering Contact Area (Sq. Ft)", min_value=0.0, value=150.0, key="sh_a")
+        shutter_type = st.selectbox("Shuttering Material Type", ["Steel Sheet / Steel Props", "Plywood with Wooden Runners", "Timber Board"], index=1)
+    with s_col2:
+        reusability = st.number_input("Estimated Re-uses per Sheet/Prop", min_value=1, max_value=20, value=5)
+        shutter_rate_sqft = st.number_input("Shuttering Rental/Material Rate (BDT / Sq. Ft)", min_value=0.0, value=45.0)
+
+    if st.button("Calculate Formwork", type="primary"):
+        plywood_sheets = (shutter_area / 32.0) / reusability
+        formwork_cost = shutter_area * shutter_rate_sqft
+
+        st.session_state["formwork_summary"] = formwork_cost
+
+        st.markdown("---")
+        st.subheader("📊 Formwork & Shuttering Breakdown")
+
+        sh_c1, sh_c2 = st.columns(2)
+        with sh_c1:
+            st.metric("Plywood Sheets Equivalent (8' x 4')", f"{plywood_sheets:,.1f} Sheets", f"Based on {reusability} re-uses")
+        with sh_c2:
+            st.metric("Total Shuttering Cost", f"BDT {formwork_cost:,.2f}", f"@ {shutter_rate_sqft} BDT/Sq.Ft")
+
+        st.success(f"💰 Total Formwork Cost: BDT {formwork_cost:,.2f}")
+        
 elif calc_type == "📊 Master Summary & PDF Report":
-    st.header("📊 Full Project Summary & Master PDF Report")
-    # Insert your original summary and PDF generation code here
-st.sidebar.divider()
-st.sidebar.subheader("⚙️ Local Market Rates (BDT)")
+    st.header("📊 Master Summary & Cost Consolidation")
+    st.markdown("Aggregated structural estimate across all calculated modules.")
+
+    summary_data = {
+        "Work Category": [
+            "Earth Excavation & Backfilling",
+            "Sand Filling & Brick Soling",
+            "Concrete Works (RCC/PCC)",
+            "Steel Reinforcement (Rebar)",
+            "Brickwork & Masonry",
+            "Plastering Finishing",
+            "Formwork & Shuttering"
+        ],
+        "Estimated Cost (BDT)": [
+            st.session_state["excavation_summary"],
+            st.session_state["soling_summary"],
+            st.session_state["concrete_summary"],
+            st.session_state["rebar_summary"],
+            st.session_state["brickwork_summary"],
+            st.session_state["plaster_summary"],
+            st.session_state["formwork_summary"]
+        ]
+    }
+
+    df_summary = pd.DataFrame(summary_data)
+    total_project_cost = df_summary["Estimated Cost (BDT)"].sum()
+
+    st.table(df_summary)
+    st.markdown(f"### **Total Estimated Project Cost: BDT {total_project_cost:,.2f}**")
 
 # Dynamic Material Price Inputs with Default Bangladesh Rates
 price_cement = st.sidebar.number_input("Cement Price (per bag - BDT)", value=550.0, step=5.0)
