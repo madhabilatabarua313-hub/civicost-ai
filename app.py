@@ -209,7 +209,6 @@ elif calc_type == "⛏️ Excavation & Soling":
 
             st.success(f"💰 Total Excavation & Soling Sub-Structure Cost: BDT {total_ex_soling_cost:,.2f}")
 elif calc_type == "🧱 Concrete Volume":
-    stelif calc_type == "🧱 Concrete Volume":
     st.header("🧱 Concrete Volume & Material Calculator")
     st.markdown("Compute dry volume, cement bags, sand CFT, and aggregate CFT for RCC/PCC works.")
     
