@@ -1020,3 +1020,32 @@ elif calc_type == "Full Project Summary & Master PDF":
                 
         elif admin_password:
             st.error("Incorrect Password!")
+
+st.markdown("---")
+st.markdown("<h2 style='text-align: center;'>User Ratings & Feedback</h2>", unsafe_allow_html=True)
+
+# Rating Header display (Average rating & count)
+st.markdown("<p style='text-align: center; font-size: 20px; color: #FFD700;'>⭐⭐⭐⭐⭐ <b style='color: black;'>5.0</b> <span style='color: gray; font-size: 14px;'>(1 rating)</span></p>", unsafe_allow_html=True)
+
+# Sample review card
+st.info("""
+⭐⭐⭐⭐⭐  
+**Mahmud Rahman – Site Engineer:** "The feature for estimating costs based on local market rates is amazing."  
+*— kamtul83*
+""")
+
+# Leave a rating form container
+st.markdown("### Leave a Rating")
+with st.rating_form := st.form("rating_form"):
+    user_rating = st.slider("Select your rating (Stars):", min_value=1, max_value=5, value=5, format="%d ⭐")
+    review_name = st.text_input("Your Name / Title")
+    review_msg = st.text_area("Your Feedback / Comment")
+    
+    submit_review = st.form_submit_button("Submit Rating")
+    
+    if submit_review:
+        if review_name and review_msg:
+            st.success("Thank you for your valuable rating and feedback!")
+            # Note: You can append this review data to your CSV or session state here
+        else:
+            st.warning("Please fill in both your name and comment before submitting.")
