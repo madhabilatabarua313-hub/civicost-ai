@@ -9,6 +9,19 @@ st.set_page_config(
     layout="wide"
 )
 
+# Session state initialization for holding module calculation results
+keys = [
+    "excavation_summary", 
+    "concrete_summary", 
+    "rebar_summary", 
+    "brick_summary", 
+    "plaster_summary", 
+    "shuttering_summary"
+]
+
+for key in keys:
+    if key not in st.session_state:
+        st.session_state[key] = None
 # Function to generate PDF Reports
 # Helper function to sanitize special characters
 def clean_text(text):
@@ -249,6 +262,9 @@ elif calc_type == "Excavation & Soling Estimator":
 
         total_estimated_cost = cost_bricks + cost_cc_total + cost_backfill
 
+        st.session_state["excavation_summary"] = {
+        "total_cost": total_estimated_cost
+    }
         # DISPLAY RESULTS
         st.success("✔ Earthwork & Soling Estimation Completed!")
 
@@ -416,6 +432,9 @@ if calc_type == "Concrete Volume & Material Calculator":
         
         total_cost = (cement_bags * cement_price) + (sand_cft * sand_price) + (chips_cft * chips_price)
 
+        st.session_state["concrete_summary"] = {
+    "total_cost": total_concrete_cost
+}
         st.success(f"**Total Concrete Volume ({num_elements} {element_type}s):** {total_wet_vol:.2f} CFT (Includes {wastage_pct}% Wastage)")
         
         m1, m2, m3, m4, m5 = st.columns(5)
@@ -481,7 +500,10 @@ elif calc_type == "Rebar (Steel) Calculator":
         
         total_weight_ton = total_weight_kg / 1000.0
         total_cost = total_weight_kg * steel_price_per_kg
-        
+
+        st.session_state["rebar_summary"] = {
+    "total_cost": total_rebar_cost
+}
         # Calculate full 12m length rod count equivalent
         full_rods_equivalent = (total_length_ft * (1 + wastage_pct/100.0)) / 39.37
 
@@ -577,6 +599,8 @@ elif calc_type == "Brickwork Estimator":
         cost_sand = sand_cft * sand_price
         total_cost = cost_bricks + cost_cement + cost_sand
 
+        st.session_state["brickwork_summary"] = {
+    "total_cost": total_brickwork_cost
         st.success(f"**Net Wall Area:** {net_area:.2f} Sq. Ft. (Gross: {gross_area:.2f} sq.ft, Deducted: {openings_area} sq.ft)")
 
         c1, c2, c3, c4 = st.columns(4)
@@ -647,7 +671,10 @@ elif calc_type == "Plastering Estimator":
         sand_cft = (s_part / total_parts) * dry_vol
         
         total_cost = (cement_bags * cement_price) + (sand_cft * sand_price)
-        
+
+        st.session_state["plaster_summary"] = {
+    "total_cost": total_plaster_cost
+}
         st.success(f"**Total Plaster Area:** {plaster_area} Sq. Ft. (Wastage Included: {wastage_pct}%)")
         
         c1, c2, c3 = st.columns(3)
@@ -774,6 +801,9 @@ elif calc_type == "Formwork & Shuttering Estimator":
             "total_cost": total_shuttering_cost
         }
 
+        st.session_state["formwork_summary"] = {
+        "total_cost": total_shuttering_cost
+    }
         st.success("✔ Formwork & Shuttering Area Calculation Completed!")
 
         m1, m2, m3, m4 = st.columns(4)
