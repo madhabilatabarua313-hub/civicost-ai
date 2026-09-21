@@ -149,6 +149,136 @@ if calc_type == "Home / Overview":
 
     st.caption("👈 *Select a calculator module from the sidebar menu to begin estimation.*")
 
+# ==========================================
+# Excavation & Soling Estimator
+# ==========================================
+elif calc_type == "Excavation & Soling Estimator":
+    st.subheader("⛏️ Excavation, Soling & Backfilling Estimator")
+    st.write("Calculate earthwork excavation volume, flat brick soling (FBS), lean CC, and backfilling requirements.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("##### 📐 Pit / Trench Dimensions")
+        num_pits = st.number_input("Number of Identical Pits / Footings", min_value=1, value=10, step=1)
+        pit_length = st.number_input("Length of Pit (Ft)", min_value=0.1, value=6.0, step=0.5)
+        pit_width = st.number_input("Width of Pit (Ft)", min_value=0.1, value=6.0, step=0.5)
+        pit_depth = st.number_input("Depth of Excavation (Ft)", min_value=0.1, value=5.0, step=0.5)
+        
+        st.markdown("##### 📐 Soling & CC Details")
+        soling_layers = st.selectbox("Brick Soling Type", ["Single Flat Brick Soling (FBS)", "Double Layer Soling"])
+        cc_thickness = st.number_input("Lean Concrete / CC Thickness (Inches)", min_value=0.0, value=3.0, step=0.5)
+        cc_ratio = st.selectbox("Lean Concrete Mix Ratio (Cement : Sand : Aggregate)", ["1:3:6", "1:4:8", "1:2:4"])
+
+    with col2:
+        st.markdown("##### 🧱 Concrete Footing Volume (For Backfilling Calculation)")
+        footing_length = st.number_input("Concrete Footing Length (Ft)", min_value=0.0, value=5.0, step=0.5)
+        footing_width = st.number_input("Concrete Footing Width (Ft)", min_value=0.0, value=5.0, step=0.5)
+        footing_depth = st.number_input("Concrete Footing Depth/Height (Ft)", min_value=0.0, value=1.5, step=0.25)
+        
+        st.markdown("##### 🚜 Additional Settings")
+        working_space = st.number_input("Extra Working Space / Safety Allowance (%)", min_value=0.0, value=5.0, step=1.0)
+        price_soil = st.number_input("Backfilling Soil / Sand Price (per CFT - BDT)", min_value=0.0, value=18.0, step=1.0)
+
+    st.divider()
+
+    if st.button("Calculate Earthwork & Soling"):
+        # 1. Total Excavation Calculation
+        raw_excavation_cft = pit_length * pit_width * pit_depth * num_pits
+        total_excavation_cft = raw_excavation_cft * (1 + working_space / 100)
+        
+        # 2. Flat Brick Soling Calculation (Standard BNBC: 3.15 bricks per sq.ft for single flat layer)
+        pit_area_sqft = pit_length * pit_width * num_pits
+        bricks_per_sqft = 3.15 if soling_layers == "Single Flat Brick Soling (FBS)" else 6.30
+        total_soling_bricks = pit_area_sqft * bricks_per_sqft
+        
+        # 3. Lean Concrete (CC) Calculation
+        cc_thickness_ft = cc_thickness / 12.0
+        cc_wet_volume = pit_area_sqft * cc_thickness_ft
+        cc_dry_volume = cc_wet_volume * 1.54 # Dry volume factor
+        
+        ratio_parts = [float(x) for x in cc_ratio.split(":")]
+        sum_ratio = sum(ratio_parts)
+        
+        c_part, s_part, a_part = ratio_parts[0], ratio_parts[1], ratio_parts[2]
+        
+        cc_cement_cft = (cc_dry_volume * c_part) / sum_ratio
+        cc_cement_bags = cc_cement_cft / 1.25
+        cc_sand_cft = (cc_dry_volume * s_part) / sum_ratio
+        cc_agg_cft = (cc_dry_volume * a_part) / sum_ratio
+        
+        # 4. Backfilling Volume Calculation
+        footing_concrete_vol = footing_length * footing_width * footing_depth * num_pits
+        soling_vol = pit_area_sqft * (0.25 if soling_layers == "Single Flat Brick Soling (FBS)" else 0.5)
+        backfilling_cft = total_excavation_cft - (footing_concrete_vol + cc_wet_volume + soling_vol)
+        backfilling_cft = max(0.0, backfilling_cft)
+        
+        # Cost Calculations
+        cost_bricks = total_soling_bricks * price_brick
+        cost_cc_cement = cc_cement_bags * price_cement
+        cost_cc_sand = cc_sand_cft * price_sand
+        cost_cc_agg = cc_agg_cft * price_aggregate
+        cost_cc_total = cost_cc_cement + cost_cc_sand + cost_cc_agg
+        cost_backfill = backfilling_cft * price_soil
+        
+        total_estimated_cost = cost_bricks + cost_cc_total + cost_backfill
+        
+        # --- DISPLAY RESULTS ---
+        st.success("✅ Earthwork & Soling Estimation Completed!")
+        
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Total Excavation", f"{total_excavation_cft:,.2f} CFT")
+        m2.metric("Soling Bricks", f"{total_soling_bricks:,.0f} Pcs")
+        m3.metric("Lean CC Cement", f"{cc_cement_bags:,.2f} Bags")
+        m4.metric("Backfill Volume", f"{backfilling_cft:,.2f} CFT")
+
+        st.divider()
+        st.markdown("### 📊 Detailed Breakdown & Material Quantities")
+        
+        summary_df = pd.DataFrame({
+            "Item / Material": [
+                "Total Excavation Volume (with safety margin)",
+                "Flat Brick Soling (FBS)",
+                "Lean CC Cement",
+                "Lean CC Sand",
+                "Lean CC Coarse Aggregate",
+                "Backfilling Soil/Sand"
+            ],
+            "Quantity": [
+                f"{total_excavation_cft:,.2f} CFT",
+                f"{total_soling_bricks:,.0f} Pcs",
+                f"{cc_cement_bags:,.2f} Bags",
+                f"{cc_sand_cft:,.2f} CFT",
+                f"{cc_agg_cft:,.2f} CFT",
+                f"{backfilling_cft:,.2f} CFT"
+            ],
+            "Cost (BDT)": [
+                "N/A (Labor/Machine)",
+                f"BDT {cost_bricks:,.2f}",
+                f"BDT {cost_cc_cement:,.2f}",
+                f"BDT {cost_cc_sand:,.2f}",
+                f"BDT {cost_cc_agg:,.2f}",
+                f"BDT {cost_backfill:,.2f}"
+            ]
+        })
+        
+        st.table(summary_df)
+        st.subheader(f"💰 Total Material Cost: BDT {total_estimated_cost:,.2f}")
+        
+        # PDF Generation Data Preparation
+        pdf_report_data = [
+            {"Item": row["Item / Material"], "Quantity": row["Quantity"], "Cost (BDT)": row["Cost (BDT)"]}
+            for _, row in summary_df.iterrows()
+        ]
+        
+        pdf_bytes = generate_pdf("Excavation & Soling Estimation", pdf_report_data)
+        st.download_button(
+            label="📄 Download Excavation Report (PDF)",
+            data=pdf_bytes,
+            file_name="Excavation_Soling_Report.pdf",
+            mime="application/pdf"
+        )
+
 # 1. Concrete Calculator
 if calc_type == "Concrete Volume & Material Calculator":
     st.subheader("🧱 Concrete Mix & Material Estimator")
