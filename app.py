@@ -599,7 +599,7 @@ elif calc_type == "Brickwork Estimator":
         cost_sand = sand_cft * sand_price
         total_cost = cost_bricks + cost_cement + cost_sand
 
-           st.session_state["brickwork_summary"] = {
+        st.session_state["brickwork_summary"] = {
             "total_cost": total_cost
         }
         st.success(f"**Net Wall Area:** {net_area:.2f} Sq. Ft. (Gross: {gross_area:.2f} sq.ft, Deducted: {openings_area} sq.ft)")
