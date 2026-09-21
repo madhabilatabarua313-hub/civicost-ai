@@ -804,7 +804,7 @@ elif calc_type == "Formwork & Shuttering Estimator":
 
         st.table(summary_df)
         st.info(f"💰 **Total Estimated Formwork Expense:** BDT {total_shuttering_cost:,.2f}")
-        elif calc_type == "Full Project Summary & Master PDF":
+elif calc_type == "Full Project Summary & Master PDF":
     st.subheader("📊 Consolidated Master Project Summary & Final PDF")
     st.write("Generate and download a complete structural estimate report combining all calculated elements.")
 
