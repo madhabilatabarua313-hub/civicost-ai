@@ -15,6 +15,21 @@ st.set_page_config(
     layout="wide"
 )
 
+# --------------------------------------------------
+# HIDE GITHUB / FORK TOOLBAR & STREAMLIT FOOTER
+# --------------------------------------------------
+st.markdown("""
+    <style>
+    [data-testid="stToolbar"] {
+        visibility: hidden;
+        height: 0%;
+        position: fixed;
+    }
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
 # Initialize Session States
 if "calc_type" not in st.session_state:
     st.session_state["calc_type"] = "🏠 Home / Dashboard"
