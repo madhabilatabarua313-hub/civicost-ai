@@ -116,10 +116,10 @@ if calc_type == "Home / Overview":
     
     st.divider()
     
-    # Feature Overview Cards
+  # Feature Overview Cards
     st.markdown("### 🛠️ Available Estimator Modules")
     col1, col2 = st.columns(2)
-   with col1:
+    with col1:
         st.info("""
         #### ⛏️ Excavation & Soling Estimator
         - Earthwork excavation volume & safety allowance.
@@ -148,6 +148,14 @@ if calc_type == "Home / Overview":
         - d²/533 weight calculation in KG and Metric Tons.
         - Standard 12-meter commercial bar count calculator.
         """)
+        
+        st.success("""
+        #### 🖌️ Wall & Ceiling Plaster Estimator
+        - Inner wall, outer wall, and ceiling plaster ratios (1:3, 1:4, 1:5, 1:6).
+        - Thickness conversion (0.25'', 0.5'', 0.75'') and material cost breakdown.
+        """)
+
+    st.caption("👉 *Select a calculator module from the sidebar menu to begin estimation.*")
         
         st.success("""
         #### 🖌️ Wall & Ceiling Plaster Estimator
