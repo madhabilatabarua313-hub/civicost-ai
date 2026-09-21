@@ -235,14 +235,6 @@ ex_summary_items = [
     ),
 ]
 
-# PDF Generation
-ex_pdf = generate_pdf_report(
-    title="Excavation & Soling Estimate",
-    engineer_name=engineer_name,
-    total_cost=total_ex_soling_cost,
-    summary_items=ex_summary_items,
-)
-
 # PDF Generation & Download
     ex_pdf = generate_pdf_report(
         title="Excavation & Soling Estimate",
