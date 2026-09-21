@@ -964,7 +964,7 @@ elif calc_type == "Full Project Summary & Master PDF":
                     import os
                     from datetime import datetime
                     
-                    # Feedback data ready kora
+                    # Prepare feedback data
                     feedback_data = pd.DataFrame([{
                         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "Name": user_name,
@@ -974,7 +974,7 @@ elif calc_type == "Full Project Summary & Master PDF":
                     
                     file_path = "feedback.csv"
                     
-                    # File na thakle create hobe, thakle append hobe
+                    # Create file if it doesn't exist, otherwise append
                     if not os.path.exists(file_path):
                         feedback_data.to_csv(file_path, index=False)
                     else:
@@ -985,3 +985,31 @@ elif calc_type == "Full Project Summary & Master PDF":
                     st.error(f"An error occurred while saving feedback: {e}")
             else:
                 st.warning("Please fill in at least your name and message before submitting.")
+
+    # Secure Admin Panel for Viewing/Downloading Feedback
+    st.markdown("### 🔐 Admin Access")
+    with st.expander("Admin Login to View Feedback"):
+        admin_password = st.text_input("Enter Admin Password", type="password")
+        
+        # You can change your password here if needed
+        if admin_password == "civicost123":
+            st.success("Access Granted!")
+            file_path = "feedback.csv"
+            
+            if os.path.exists(file_path):
+                import pandas as pd
+                df_feedback = pd.read_csv(file_path)
+                st.dataframe(df_feedback)
+                
+                # Download button
+                with open(file_path, "rb") as f:
+                    st.download_button(
+                        label="Download Feedback CSV",
+                        data=f,
+                        file_name="feedback.csv",
+                        mime="text/csv"
+                    )
+            else:
+                st.info("No feedback received yet.")
+        elif admin_password:
+            st.error("Incorrect Password!")
