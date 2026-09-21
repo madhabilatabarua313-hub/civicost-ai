@@ -393,8 +393,12 @@ elif st.session_state["calc_type"] == "🏗️ Sub-structure Excavation & Soling
 
         **2. Flat Brick Soling Requirement (BNBC Standard):**  
         - BNBC Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**  
-        $$\\text{{Soling Bricks}} = {total_length \\times width:.1f} \\text{{ SFT}} \\times {3.0 if 'Single' in soling_type else 6.0} \\times {wastage_factor} = \\mathbf{{{total_soling_bricks:,.0f} \\text{{ Pcs}}}}$$
-        """)
+      area = total_length * width
+multiplier = 3.0 if 'Single' in soling_type else 6.0
+
+st.latex(
+    rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times {wastage_factor:.2f} = {soling_bricks} \text{{ Pcs}}"
+)
 
     ex_summary = [
         {"Item": "Earth Excavation Work", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
