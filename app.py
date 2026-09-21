@@ -183,6 +183,12 @@ elif calc_type == "Excavation & Soling Estimator":
     st.divider()
 
     if st.button("Calculate Earthwork & Soling"):
+        # Safe material rate fetches from sidebar variables or defaults
+        p_cement = globals().get("price_cement", 550.0)
+        p_sand = globals().get("price_sand", 45.0)
+        p_brick = globals().get("price_brick", globals().get("price_bricks", 12.0))
+        p_agg = globals().get("price_aggregate", globals().get("price_khoa", 130.0))
+
         # 1. Total Excavation Calculation
         raw_excavation_cft = pit_length * pit_width * pit_depth * num_pits
         total_excavation_cft = raw_excavation_cft * (1 + working_space / 100)
@@ -214,10 +220,10 @@ elif calc_type == "Excavation & Soling Estimator":
         backfilling_cft = max(0.0, backfilling_cft)
         
         # Cost Calculations
-        cost_bricks = total_soling_bricks * price_brick
-        cost_cc_cement = cc_cement_bags * price_cement
-        cost_cc_sand = cc_sand_cft * price_sand
-        cost_cc_agg = cc_agg_cft * price_aggregate
+        cost_bricks = total_soling_bricks * p_brick
+        cost_cc_cement = cc_cement_bags * p_cement
+        cost_cc_sand = cc_sand_cft * p_sand
+        cost_cc_agg = cc_agg_cft * p_agg
         cost_cc_total = cost_cc_cement + cost_cc_sand + cost_cc_agg
         cost_backfill = backfilling_cft * price_soil
         
