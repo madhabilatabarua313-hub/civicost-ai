@@ -156,23 +156,6 @@ if calc_type == "Home / Overview":
         """)
 
     st.caption("👉 *Select a calculator module from the sidebar menu to begin estimation.*")
-        
-        st.success("""
-        #### 🖌️ Wall & Ceiling Plaster Estimator
-        - Inner wall, outer wall, and ceiling plaster ratios (1:3, 1:4, 1:5, 1:6).
-        - Thickness conversion (0.25'', 0.5'', 0.75'') and material cost breakdown.
-        """)
-
-    st.caption("👉 *Select a calculator module from the sidebar menu to begin estimation.*")
-        
-        st.success("""
-        #### 🖌️ Wall & Ceiling Plaster Estimator
-        - Inner wall, outer wall, and ceiling plaster ratios (1:3, 1:4, 1:5, 1:6).
-        - Thickness conversion (0.25'', 0.5'', 0.75'') and material cost breakdown.
-        """)
-
-    st.caption("👈 *Select a calculator module from the sidebar menu to begin estimation.*")
-
 # ==========================================
 # Excavation & Soling Estimator
 # ==========================================
