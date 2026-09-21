@@ -502,7 +502,7 @@ elif calc_type == "Rebar (Steel) Calculator":
         total_cost = total_weight_kg * steel_price_per_kg
 
         st.session_state["rebar_summary"] = {
-    "total_cost": total_rebar_cost
+    "total_cost": total_cost
 }
         # Calculate full 12m length rod count equivalent
         full_rods_equivalent = (total_length_ft * (1 + wastage_pct/100.0)) / 39.37
