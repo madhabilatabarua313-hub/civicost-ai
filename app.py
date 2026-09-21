@@ -68,13 +68,14 @@ def generate_pdf(project_title, summary_data):
 st.sidebar.title("📌 Navigation")
 calc_type = st.sidebar.selectbox(
     "Choose Calculation Type:",
-    [
-        "Home / Overview",
-        "Concrete Volume & Material Calculator",
-        "Rebar (Steel) Calculator",
-        "Brickwork Estimator",
-        "Plastering Estimator"
-    ]
+   [
+            "Home / Overview",
+            "Excavation & Soling Estimator",
+            "Concrete Volume & Material Calculator",
+            "Rebar (Steel) Calculator",
+            "Brickwork Estimator",
+            "Plastering Estimator"
+        ]
 )
 
 st.sidebar.divider()
