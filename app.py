@@ -76,8 +76,8 @@ calc_type = st.sidebar.selectbox(
             "Rebar (Steel) Calculator",
             "Brickwork Estimator",
             "Plastering Estimator",
-       "Plastering Estimator",
-            "Formwork & Shuttering Estimator"
+            "Formwork & Shuttering Estimator",
+       "Full Project Summary & Master PDF"
         ]
 )
 
@@ -804,3 +804,113 @@ elif calc_type == "Formwork & Shuttering Estimator":
 
         st.table(summary_df)
         st.info(f"💰 **Total Estimated Formwork Expense:** BDT {total_shuttering_cost:,.2f}")
+        elif calc_type == "Full Project Summary & Master PDF":
+    st.subheader("📊 Consolidated Master Project Summary & Final PDF")
+    st.write("Generate and download a complete structural estimate report combining all calculated elements.")
+
+    # Check session state data availability
+    exc_data = st.session_state.get("excavation_data")
+    conc_data = st.session_state.get("concrete_data")
+    rebar_data = st.session_state.get("rebar_data")
+    brick_data = st.session_state.get("brick_data")
+    plaster_data = st.session_state.get("plaster_data")
+    shutter_data = st.session_state.get("shuttering_data")
+
+    project_title = st.text_input("Project Name / Title", value="Multi-Story Residential Building Estimate")
+    engineer_name = st.text_input("Prepared By (Engineer / Estimator Name)", value="Madhabilata Barua, B.Sc. Engineer")
+
+    st.divider()
+    st.markdown("##### 📋 Summary of Calculated Modules")
+
+    # Table breakdown of calculated modules
+    master_rows = []
+    total_project_cost = 0.0
+
+    if exc_data:
+        cost = exc_data.get("total_cost", 0.0)
+        total_project_cost += cost
+        master_rows.append({"Module": "Excavation & Brick Soling", "Status": "Calculated", "Estimated Cost (BDT)": f"{cost:,.2f}"})
+    else:
+        master_rows.append({"Module": "Excavation & Brick Soling", "Status": "Not Calculated", "Estimated Cost (BDT)": "0.00"})
+
+    if conc_data:
+        cost = conc_data.get("total_cost", 0.0)
+        total_project_cost += cost
+        master_rows.append({"Module": "Concrete & Structural Works", "Status": "Calculated", "Estimated Cost (BDT)": f"{cost:,.2f}"})
+    else:
+        master_rows.append({"Module": "Concrete & Structural Works", "Status": "Not Calculated", "Estimated Cost (BDT)": "0.00"})
+
+    if rebar_data:
+        cost = rebar_data.get("total_cost", 0.0)
+        total_project_cost += cost
+        master_rows.append({"Module": "Reinforcement Steel (Rebar)", "Status": "Calculated", "Estimated Cost (BDT)": f"{cost:,.2f}"})
+    else:
+        master_rows.append({"Module": "Reinforcement Steel (Rebar)", "Status": "Not Calculated", "Estimated Cost (BDT)": "0.00"})
+
+    if shutter_data:
+        cost = shutter_data.get("total_cost", 0.0)
+        total_project_cost += cost
+        master_rows.append({"Module": "Formwork & Shuttering", "Status": "Calculated", "Estimated Cost (BDT)": f"{cost:,.2f}"})
+    else:
+        master_rows.append({"Module": "Formwork & Shuttering", "Status": "Not Calculated", "Estimated Cost (BDT)": "0.00"})
+
+    if brick_data:
+        cost = brick_data.get("total_cost", 0.0)
+        total_project_cost += cost
+        master_rows.append({"Module": "Brickwork Masonry", "Status": "Calculated", "Estimated Cost (BDT)": f"{cost:,.2f}"})
+    else:
+        master_rows.append({"Module": "Brickwork Masonry", "Status": "Not Calculated", "Estimated Cost (BDT)": "0.00"})
+
+    if plaster_data:
+        cost = plaster_data.get("total_cost", 0.0)
+        total_project_cost += cost
+        master_rows.append({"Module": "Plastering Works", "Status": "Calculated", "Estimated Cost (BDT)": f"{cost:,.2f}"})
+    else:
+        master_rows.append({"Module": "Plastering Works", "Status": "Not Calculated", "Estimated Cost (BDT)": "0.00"})
+
+    import pandas as pd
+    master_df = pd.DataFrame(master_rows)
+    st.table(master_df)
+
+    st.markdown(f"### 💰 **Grand Total Project Estimate:** BDT {total_project_cost:,.2f}")
+    st.divider()
+
+    # Master PDF Generation
+    if st.button("Generate Combined Master PDF Report"):
+        from fpdf import FPDF
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(190, 10, txt="CiviCost AI - Master Project Estimation Report", ln=True, align='C')
+        pdf.set_font("Arial", size=10)
+        pdf.cell(190, 6, txt=f"Project: {project_title}", ln=True, align='C')
+        pdf.cell(190, 6, txt=f"Prepared By: {engineer_name}", ln=True, align='C')
+        pdf.ln(8)
+
+        # Table Header
+        pdf.set_font("Arial", 'B', 10)
+        pdf.cell(100, 8, "Module Name", 1)
+        pdf.cell(40, 8, "Status", 1)
+        pdf.cell(50, 8, "Cost (BDT)", 1)
+        pdf.ln()
+
+        pdf.set_font("Arial", size=9)
+        for row in master_rows:
+            pdf.cell(100, 7, row["Module"], 1)
+            pdf.cell(40, 7, row["Status"], 1)
+            pdf.cell(50, 7, row["Estimated Cost (BDT)"], 1)
+            pdf.ln()
+
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(190, 10, txt=f"Grand Total Estimated Cost: BDT {total_project_cost:,.2f}", ln=True)
+
+        pdf_bytes = bytes(pdf.output())
+
+        st.download_button(
+            label="📥 Download Master Project Summary PDF",
+            data=pdf_bytes,
+            file_name="Master_Project_Summary_Report.pdf",
+            mime="application/pdf"
+        )
