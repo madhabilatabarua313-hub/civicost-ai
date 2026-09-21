@@ -248,7 +248,7 @@ st.download_button(
     label="📄 Download Section Report (.pdf)",
     data=ex_pdf,
     file_name="Excavation_Report.pdf",
-    mime="application/pdf",
+    mime="application/pdf"
 )
 
 # 3. ADVANCED CONCRETE VOLUME (Beam, Column, Slab, Stair)
