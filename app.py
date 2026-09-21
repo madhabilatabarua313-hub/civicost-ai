@@ -80,18 +80,18 @@ def generate_pdf(project_title, summary_data):
 # 1. Sidebar Navigation & Market Rates
 # ==========================================
 st.sidebar.title("📌 Navigation")
-calc_type = st.sidebar.selectbox(
+app_mode = st.sidebar.radio(
     "Choose Calculation Type:",
-   [
-            "Home / Overview",
-            "Excavation & Soling Estimator",
-            "Concrete Volume & Material Calculator",
-            "Rebar (Steel) Calculator",
-            "Brickwork Estimator",
-            "Plastering Estimator",
-            "Formwork & Shuttering Estimator",
-       "Full Project Summary & Master PDF"
-        ]
+    [
+        "🏠 Project Control Center (Home)",
+        "⛏️ Excavation & Soling",
+        "🧱 Concrete Volume",
+        "🔩 Rebar (Steel)",
+        "🧱 Brickwork Estimator",
+        "🎨 Plastering Estimator",
+        "🪵 Formwork & Shuttering",
+        "📊 Master Summary & PDF Report"
+    ]
 )
 
 st.sidebar.divider()
