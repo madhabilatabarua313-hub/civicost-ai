@@ -549,18 +549,42 @@ elif st.session_state["calc_type"] == "📑 Combined Project Report":
         )
 
 # --------------------------------------------------
-# SECTION 6: USER RATINGS & FEEDBACK
+# SECTION 6: USER RATINGS & FEEDBACK (Safe Persistent Version)
 # --------------------------------------------------
 elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
     st.header("⭐ User Ratings & Feedback")
     st.write("We value your feedback! Rate your experience with CivicCost AI.")
 
-    # Initialize feedback storage in session state if not exists
-    if "feedbacks_list" not in st.session_state:
-        st.session_state["feedbacks_list"] = [
+    import json
+    import os
+
+    FEEDBACK_FILE = "feedback.json"
+
+    # Load existing feedbacks from file if exists, otherwise use default
+    def load_feedbacks():
+        if os.path.exists(FEEDBACK_FILE):
+            try:
+                with open(FEEDBACK_FILE, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return [
             {"Engineer": "Engr. Nazmul", "Rating": "5/5 ⭐", "Feedback": "Extremely helpful for quick BNBC calculations!"},
             {"Engineer": "Engr. Tanvir", "Rating": "4/5 ⭐", "Feedback": "Great layout and regional pricing feature."}
         ]
+
+    # Save feedbacks safely to file
+    def save_feedbacks(feedbacks):
+        try:
+            with open(FEEDBACK_FILE, "w", encoding="utf-8") as f:
+                json.dump(feedbacks, f, ensure_ascii=False, indent=4)
+        except Exception:
+            # Fallback silently if cloud storage is read-only, preventing any app crash
+            pass
+
+    # Initialize session state storage
+    if "feedbacks_list" not in st.session_state:
+        st.session_state["feedbacks_list"] = load_feedbacks()
 
     with st.form("feedback_form"):
         rating = st.slider("Rate the platform accuracy & usability", 1, 5, 5)
@@ -573,13 +597,16 @@ elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
                 "Rating": f"{rating}/5 ⭐",
                 "Feedback": feedback_text if feedback_text else "No comments provided"
             }
+            # Insert at the top of the list
             st.session_state["feedbacks_list"].insert(0, new_feedback)
+            # Save to file safely
+            save_feedbacks(st.session_state["feedbacks_list"])
             st.success("Thank you! Your feedback has been published successfully.")
 
     st.markdown("---")
     st.subheader("📋 Public User Feedback & Ratings")
     
-    # Display all feedbacks currently in memory on screen
+    # Display all feedbacks on screen
     for idx, fb in enumerate(st.session_state["feedbacks_list"], 1):
         with st.container():
             st.info(f"**# {idx} | Engineer: {fb['Engineer']} | Rating: {fb['Rating']}**\n\n> \"{fb['Feedback']}\"")
