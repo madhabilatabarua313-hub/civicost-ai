@@ -371,7 +371,7 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
         {"Item": f"Steel Rebar ({rebar_dia}mm)", "Qty": f"{rebar_weight_kg:,.1f} KG", "Cost": f"BDT {cost_r:,.2f}"}
     ]
 
- st.session_state["estimates_data"]["Footing & Column"] = {
+   st.session_state["estimates_data"]["Footing & Column"] = {
         "cost": total_fc_cost,
         "summary": fc_summary
     }
