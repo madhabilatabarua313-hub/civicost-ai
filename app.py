@@ -344,22 +344,21 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
 
     # Formula & Sample Calculation Expander
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
-      st.markdown(rf"""
-    **1. Concrete Volume Calculation:**
-    $$\text{{Total Concrete}} = [\text{{Footings: }} {{num_footings}} \times ({{f_len}} \times {{f_wid}} \times {{f_dep}})] + [\text{{Columns: }} {{num_cols}} \times ({{col_len}} \times {{col_wid}} \times {{col_height}})] = {{wet_vol:,.2f}} \text{{ CFT}}$$
-    $$\text{{Standard Practice Factor}} = 1.54 \implies \text{{Dry Volume}} = {{wet_vol:,.2f}} \times 1.54 = \mathbf{{{{dry_vol:,.2f}}}} \text{{ CFT}}$$
-    """)
+    st.markdown(rf"""
+**1. Concrete Volume Calculation:**
+$$\text{{Total Concrete}} = [\text{{Footings: }} {{num_footings}} \times ({{f_len}} \times {{f_wid}} \times {{f_dep}})] + [\text{{Columns: }} {{num_cols}} \times ({{col_len}} \times {{col_wid}} \times {{col_height}})] = {{wet_vol:,.2f}} \text{{ CFT}}$$
+$$\text{{Standard Practice Factor}} = 1.54 \implies \text{{Dry Volume}} = {{wet_vol:,.2f}} \times 1.54 = \mathbf{{{{dry_vol:,.2f}}}} \text{{ CFT}}$$
 
-        **2. Material Calculation (Mix Ratio {clean_mix}):**  
-        - **Cement Bags:** $\\frac{{{dry_vol:.2f} \\times ({parts[0]}/{total_parts})}}{{1.25 \\text{{ CFT/bag}}}} \\times {wastage_factor} = \\mathbf{{{cement_bags:.2f} \\text{{ Bags}}}}$  
-        - **Sand Volume:** ${dry_vol:.2f} \\times ({parts[1]}/{total_parts}) \\times {wastage_factor} = \\mathbf{{{sand_cft:.2f} \\text{{ CFT}}}}$  
-        - **Khoa/Chips Volume:** ${dry_vol:.2f} \\times ({parts[2]}/{total_parts}) \\times {wastage_factor} = \\mathbf{{{khoa_cft:.2f} \\text{{ CFT}}}}$  
-        - **Mixing Water ($W/C = 0.45$):** ${cement_bags:.2f} \\text{{ bags}} \\times 22.5 \\text{{ L/bag}} = \\mathbf{{{water_liters:.1f} \\text{{ Liters}}}}$  
+**2. Material Calculation (Mix Ratio {{clean_mix}}):**
+- **Cement Bags:** $\frac{{{{dry_vol:,.2f}} \times ({{{parts[0]}}}/{{{total_parts}}}})}{{{1.25} \text{{ CFT/bag}}}} \times \text{{wastage_factor}} = \mathbf{{{{cement_bags:,.1f}}}} \text{{ bags}}$
+- **Sand Volume:** ${{{dry_vol:,.2f}}} \times ({{{parts[1]}}}/{{{total_parts}}}) \times \text{{wastage_factor}} = \mathbf{{{{sand_cft:,.1f}}}} \text{{ CFT}}$
+- **Khoa/Chips Volume:** ${{{dry_vol:,.2f}}} \times ({{{parts[2]}}}/{{{total_parts}}}) \times \text{{wastage_factor}} = \mathbf{{{{khoa_cft:,.1f}}}} \text{{ CFT}}$
+- **Mixing Water ($W/C = 0.45$):** ${{{cement_bags:,.2f}}} \text{{ bags}} \times 22.5 \text{{ L/bag}} = \mathbf{{{{water_liters:,.0f}}}} \text{{ Liters}}$
 
-        **3. Rebar Weight Formula ($\Phi={rebar_dia}\\text{{mm}}$):**  
-        $$\\text{{Unit Weight}} = \\frac{{{rebar_dia}^2}}{{162.2}} = \\frac{{{rebar_dia**2}}}{{162.2}} = {((rebar_dia**2)/162.2):.3f} \\text{{ kg/m}}$$  
-        $$\\text{{Total Steel Weight}} = \\text{{Total Length (m)}} \\times \\text{{Unit Weight}} \\times {wastage_factor} = \\mathbf{{{rebar_weight_kg:.2f} \\text{{ KG}}}}$$
-        """)
+**3. Rebar Weight Formula ($\Phi={{rebar_dia}}\text{{mm}}$):**
+$$\text{{Unit Weight}} = \frac{{{{rebar_dia}}^2}}{{162.2}} = \frac{{{{rebar_dia}}*2}}{{162.2}} = {{{{rebar_dia}}**2/162.2:.3f}} \text{{ kg/m}}$$
+$$\text{{Total Steel Weight}} = \text{{Total Length (m)}} \times \text{{Unit Weight}} \times \text{{wastage_factor}} = \mathbf{{{{rebar_weight_kg:,.1f}}}} \text{{ KG}}$$
+""")
 
     fc_summary = [
         {"Item": f"Total Concrete Volume", "Qty": f"{wet_vol:,.1f} CFT (Wet)", "Cost": "-"},
