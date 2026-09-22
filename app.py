@@ -273,7 +273,7 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
         mix_ratio = st.selectbox("Concrete Mix Ratio (BNBC)", ["1:1.5:3", "1:2:4", "1:1.5:3 (Grade M20)"])
         rebar_dia = st.selectbox("Main Rebar Diameter (mm)", [10, 12, 16, 20, 25], index=2)
         rebar_spacing = st.number_input("Rebar Center-to-Center Spacing (inch)", min_value=3.0, value=6.0)
-st.markdown("---")
+    st.markdown("---")
     st.markdown("##### 📏 Column Specifications")
     
     col_c1, col_c2, col_c3 = st.columns(3)
