@@ -384,13 +384,13 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
         mime="application/pdf"
     )
 
-# ---------------------------------------------
+# ----------------------------------------------------
 # SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING
-# ---------------------------------------------
+# ----------------------------------------------------
 if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     st.header("Sub-structure Excavation & Flat Brick Soling")
 
-    # Safe fallback for all variables to prevent any NameError or missing reference
+    # Safe fallback for all variables
     rate_exc = locals().get('rate_exc', 15.0)
     rate_sand = locals().get('rate_sand', 35.0)
     rate_brick = locals().get('rate_brick', 12.0)
@@ -431,7 +431,6 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     st.markdown("---")
     st.subheader("📊 Quantities & Cost Breakdown")
-    st.caption(f"Note: Soling bricks & sand cushion include a {wastage_percent}% wastage margin.")
 
     e_col1, e_col2, e_col3 = st.columns(3)
     e_col1.metric("Excavation Volume", f"{vol_cft:,.1f} CFT", f"BDT {cost_exc:,.0f}")
@@ -440,47 +439,12 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     st.markdown(f"### 💰 **Total Section Cost: BDT {total_ex_cost:,.2f}**")
 
-    # Session State Summary Update
-    ex_summary = [
-        {"Item": "Earth Excavation", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
-        {"Item": "Sand Filling Cushion", "Qty": f"{sand_cft:,.1f} CFT", "Cost": f"BDT {cost_sand:,.2f}"},
-        {"Item": "Soling Bricks", "Qty": f"{total_soling_bricks:,.0f} Pcs", "Cost": f"BDT {cost_soling:,.2f}"}
-    ]
-
-    if "estimates_data" not in st.session_state:
-        st.session_state["estimates_data"] = {}
-
-    st.session_state["estimates_data"]["Sub-structure Excavation"] = {
-        "cost": total_ex_cost,
-        "summary": ex_summary
-    }
-
-    try:
-        pdf_data = generate_pdf_report("Excavation & Soling Estimate", engineer_name, project_name, location, wastage_percent, total_ex_cost, ex_summary)
-        st.download_button(
-            label="📥 Download Section PDF Report",
-            data=pdf_data,
-            file_name=f"Excavation_Soling_Report_{project_name.replace(' ', '_')}.pdf",
-            mime="application/pdf"
-        )
-    except Exception:
-        pass
-
-    # Formula Expander at the bottom
+    # Formula Expander placed properly at the bottom inside the condition
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
         st.markdown(f"""
         **1. Earth Excavation Volume:**
-        * Volume = Length $\\times$ Width $\\times$ Depth = {total_length} ft $\\times$ {width} ft $\\times$ {depth} ft = **{vol_cft:,.1f} CFT**
-        
-        **2. Flat Brick Soling Requirement (Standard Practice):**
-        * Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
+        * Volume = Length x Width x Depth = {total_length} ft x {width} ft x {depth} ft = **{vol_cft:,.1f} CFT**
         """)
-        
-        area = total_length * width
-        multiplier = 3.0 if 'Single' in soling_type else 6.0
-        st.latex(
-            rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times \text{{wastage_factor}} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
-        )
         
 # --------------------------------------------------
 # SECTION 4: CONCRETE VOLUME (BEAM, COLUMN, SLAB, STAIR)
