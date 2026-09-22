@@ -360,8 +360,10 @@ with st.expander("📐 View Engineering Formula & Sample Calculation"):
     * **Total Steel Weight** = Total Length $\\times$ Unit Weight $\\times$ Wastage Factor
     """)
 
+   # Only create this summary if the Footing & Column page is currently selected
+if st.session_state.get("calc_type") == "Footing & Column Estimation":
     fc_summary = [
-        {"Item": f"Total Concrete Volume", "Qty": f"{wet_vol:,.1f} CFT (Wet)", "Cost": "-"},
+        {"Item": "Total Concrete Volume", "Qty": f"{wet_vol:,.1f} CFT (Wet)", "Cost": "-"},
         {"Item": f"Cement ({clean_mix})", "Qty": f"{cement_bags:,.1f} Bags", "Cost": f"BDT {cost_c:,.2f}"},
         {"Item": "Sand", "Qty": f"{sand_cft:,.1f} CFT", "Cost": f"BDT {cost_s:,.2f}"},
         {"Item": "Khoa/Chips", "Qty": f"{khoa_cft:,.1f} CFT", "Cost": f"BDT {cost_k:,.2f}"},
@@ -371,7 +373,7 @@ with st.expander("📐 View Engineering Formula & Sample Calculation"):
 
     st.session_state["estimates_data"]["Footing & Column"] = {
         "cost": total_fc_cost,
-        "items": fc_summary
+        "summary": fc_summary
     }
 
     pdf_data = generate_pdf_report("Footing & Column Estimate", engineer_name, project_name, location, wastage_percent, total_fc_cost, fc_summary)
