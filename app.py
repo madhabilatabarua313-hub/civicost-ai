@@ -411,9 +411,9 @@ elif st.session_state["calc_type"] == "🏗️ Sub-structure Excavation & Soling
         **1. Earth Excavation Volume:**  
         $$\\text{{Volume}} = {total_length} \\text{{ ft}} \\times {width} \\text{{ ft}} \\times {depth} \\text{{ ft}} = \\mathbf{{{vol_cft:.2f} \\text{{ CFT}}}}$$
 
-        **2. Flat Brick Soling Requirement (BNBC Standard):**  
-        - BNBC Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
-        """)
+      **2. Flat Brick Soling Requirement (Standard Practice):**
+        - Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
+    """)
         
         area = total_length * width
         multiplier = 3.0 if 'Single' in soling_type else 6.0
