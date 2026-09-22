@@ -390,12 +390,16 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
 if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     st.header("Sub-structure Excavation & Flat Brick Soling")
 
-    # Safe fallback variables in case they are defined later in your script
-    rate_exc = locals().get('rate_exc', 15.0)  # BDT per CFT default
-    rate_sand = locals().get('rate_sand', 35.0) # BDT per CFT default
-    rate_brick = locals().get('rate_brick', 12.0) # BDT per Pcs default
+    # Safe fallback for all variables to prevent any NameError or missing reference
+    rate_exc = locals().get('rate_exc', 15.0)
+    rate_sand = locals().get('rate_sand', 35.0)
+    rate_brick = locals().get('rate_brick', 12.0)
     wastage_percent = locals().get('wastage_percent', 5.0)
     wastage_factor = 1.0 + (wastage_percent / 100.0)
+    
+    engineer_name = locals().get('engineer_name', st.session_state.get('engineer_name', 'Engr. Madhabilata Barua'))
+    project_name = locals().get('project_name', st.session_state.get('project_name', '3-Storey Residential Building'))
+    location = locals().get('location', st.session_state.get('location', 'Chittagong'))
 
     col_e1, col_e2 = st.columns(2)
     with col_e1:
@@ -462,7 +466,7 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     except Exception:
         pass
 
-    # Formula Expander at the bottom with unique keys for widgets inside if any
+    # Formula Expander at the bottom
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
         st.markdown(f"""
         **1. Earth Excavation Volume:**
