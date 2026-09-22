@@ -446,15 +446,17 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
             rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times {wastage_factor:.2f} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
         )
 
+  # Only create this summary if the Sub-structure Excavation & Soling page is currently selected
+if st.session_state.get("calc_type") == "Sub-structure Excavation & Soling":
     ex_summary = [
-        {"Item": "Earth Excavation Work", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
-        {"Item": "Sand Bed Cushion", "Qty": f"{sand_cft:,.1f} CFT", "Cost": f"BDT {cost_sand:,.2f}"},
-        {"Item": "Flat Brick Soling", "Qty": f"{total_soling_bricks:,.0f} Pcs", "Cost": f"BDT {cost_soling:,.2f}"}
+        {"Item": "Earth Excavation", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
+        {"Item": "Sand Filling Cushion", "Qty": f"{sand_cft:,.1f} CFT", "Cost": f"BDT {cost_sand:,.2f}"},
+        {"Item": "Soling Bricks", "Qty": f"{total_soling_bricks:,.0f} Pcs", "Cost": f"BDT {cost_soling:,.2f}"}
     ]
 
-    st.session_state["estimates_data"]["Excavation & Soling"] = {
+    st.session_state["estimates_data"]["Sub-structure Excavation"] = {
         "cost": total_ex_cost,
-        "items": ex_summary
+        "summary": ex_summary
     }
 
     pdf_data = generate_pdf_report("Excavation & Soling Estimate", engineer_name, project_name, location, wastage_percent, total_ex_cost, ex_summary)
