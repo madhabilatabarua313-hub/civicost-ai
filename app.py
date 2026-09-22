@@ -390,15 +390,22 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
 if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     st.header("Sub-structure Excavation & Flat Brick Soling")
 
+    # Safe fallback variables in case they are defined later in your script
+    rate_exc = locals().get('rate_exc', 15.0)  # BDT per CFT default
+    rate_sand = locals().get('rate_sand', 35.0) # BDT per CFT default
+    rate_brick = locals().get('rate_brick', 12.0) # BDT per Pcs default
+    wastage_percent = locals().get('wastage_percent', 5.0)
+    wastage_factor = 1.0 + (wastage_percent / 100.0)
+
     col_e1, col_e2 = st.columns(2)
     with col_e1:
-        total_length = st.number_input("Total Trench/Pit Length (ft)", min_value=1.0, value=100.0)
-        width = st.number_input("Trench/Pit Width (ft)", min_value=1.0, value=5.0)
-        depth = st.number_input("Excavation Depth (ft)", min_value=1.0, value=5.0)
+        total_length = st.number_input("Total Trench/Pit Length (ft)", min_value=1.0, value=100.0, key="ex_len")
+        width = st.number_input("Trench/Pit Width (ft)", min_value=1.0, value=5.0, key="ex_width")
+        depth = st.number_input("Excavation Depth (ft)", min_value=1.0, value=5.0, key="ex_depth")
 
     with col_e2:
-        sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0) / 12.0
-        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling (3 bricks/sft)", "Double Layer Flat Soling (6 bricks/sft)"])
+        sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0, key="ex_sand_depth") / 12.0
+        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling (3 bricks/sft)", "Double Layer Flat Soling (6 bricks/sft)"], key="ex_soling_type")
 
     # Calculations
     vol_cft = total_length * width * depth
@@ -436,20 +443,26 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
         {"Item": "Soling Bricks", "Qty": f"{total_soling_bricks:,.0f} Pcs", "Cost": f"BDT {cost_soling:,.2f}"}
     ]
 
+    if "estimates_data" not in st.session_state:
+        st.session_state["estimates_data"] = {}
+
     st.session_state["estimates_data"]["Sub-structure Excavation"] = {
         "cost": total_ex_cost,
         "summary": ex_summary
     }
 
-    pdf_data = generate_pdf_report("Excavation & Soling Estimate", engineer_name, project_name, location, wastage_percent, total_ex_cost, ex_summary)
-    st.download_button(
-        label="📥 Download Section PDF Report",
-        data=pdf_data,
-        file_name=f"Excavation_Soling_Report_{project_name.replace(' ', '_')}.pdf",
-        mime="application/pdf"
-    )
+    try:
+        pdf_data = generate_pdf_report("Excavation & Soling Estimate", engineer_name, project_name, location, wastage_percent, total_ex_cost, ex_summary)
+        st.download_button(
+            label="📥 Download Section PDF Report",
+            data=pdf_data,
+            file_name=f"Excavation_Soling_Report_{project_name.replace(' ', '_')}.pdf",
+            mime="application/pdf"
+        )
+    except Exception:
+        pass
 
-    # Formula Expander at the bottom
+    # Formula Expander at the bottom with unique keys for widgets inside if any
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
         st.markdown(f"""
         **1. Earth Excavation Volume:**
