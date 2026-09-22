@@ -25,11 +25,9 @@ st.markdown("""
         height: 0%;
         position: fixed;
     }
-
-[data-testid="stAppDeployButton"] {
+    [data-testid="stAppDeployButton"] {
         display: none !important;
     }
-    
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
@@ -164,7 +162,7 @@ nav_options = [
     "⭐ User Ratings & Feedback"
 ]
 
-selected_nav = st.sidebar.radio("Select Navigation", nav_options, index=nav_options.index(st.session_state["calc_type"]))
+selected_nav = st.sidebar.radio("Select Navigation", nav_options, index=nav_options.index(st.session_state["calc_type"]) if st.session_state["calc_type"] in nav_options else 0)
 st.session_state["calc_type"] = selected_nav
 
 st.sidebar.markdown("---")
@@ -286,7 +284,6 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
     with col_c3:
         tie_spacing = st.number_input("Tie/Stirrup Spacing (inch)", min_value=3.0, value=6.0, step=1.0)
     
-   # Engineering Calculations
     clean_mix = mix_ratio.split(" ")[0]
     footing_wet_vol = num_footings * f_len * f_wid * f_dep
     column_wet_vol = num_cols * col_len * col_wid * col_height
@@ -296,30 +293,23 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
     parts = [float(x) for x in clean_mix.split(":")]
     total_parts = sum(parts)
     
-    # Quantities with Wastage Factor
     cement_bags = ((dry_vol * (parts[0] / total_parts)) / 1.25) * wastage_factor
     sand_cft = (dry_vol * (parts[1] / total_parts)) * wastage_factor
     khoa_cft = (dry_vol * (parts[2] / total_parts)) * wastage_factor
-    
-    # Water Calculation (BNBC Standard W/C ratio = 0.45; 1 Bag Cement = 50 kg -> 22.5 L Water)
     water_liters = cement_bags * 22.5
 
     num_bars_x = int((f_len * 12) / rebar_spacing) + 1
     num_bars_y = int((f_wid * 12) / rebar_spacing) + 1
-    # Column main steel length & ties calculation
     col_main_bar_ft = num_cols * col_height * 4  
     num_ties_per_col = (col_height * 12) / tie_spacing
     tie_perimeter = 2 * (col_len + col_wid)
     total_ties_ft = num_cols * num_ties_per_col * (tie_perimeter + 1)
     
-    # Total Bar Length including Footings and Columns
     footing_bar_len = (num_bars_x * f_wid + num_bars_y * f_len) * num_footings
     total_bar_len_ft = footing_bar_len + col_main_bar_ft + total_ties_ft
     
-    # Rebar Weight Formula
     rebar_weight_kg = (total_bar_len_ft * ((rebar_dia ** 2) / 162.2) * 0.3048) * wastage_factor
 
-    # Costs
     cost_c = cement_bags * rate_cement
     cost_s = sand_cft * rate_sand
     cost_k = khoa_cft * rate_khoa
@@ -342,26 +332,6 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
 
     st.markdown(f"### 💰 **Total Footing & Column Section Cost: BDT {total_fc_cost:,.2f}**")
 
-# Formula & Sample Calculation Expander
-with st.expander("📐 View Engineering Formula & Sample Calculation"):
-    st.markdown("""
-    **1. Concrete Volume Calculation:**
-    * **Total Concrete Volume** = (Footings Volume + Columns Volume)
-    * **Dry Volume** = Wet Volume $\times 1.54$ (Standard Practice Factor for dry mix conversion)
-
-    **2. Material Calculation (Mix Ratio):**
-    * **Cement Bags** = $\\frac{\\text{Dry Volume} \\times \\text{Cement Proportion}}{\\text{Total Proportion}} \\div 1.25 \\text{ CFT/bag} \\times \\text{Wastage Factor}$
-    * **Sand Volume** = $\\text{Dry Volume} \\times \\frac{\\text{Sand Proportion}}{\\text{Total Proportion}} \\times \\text{Wastage Factor}$
-    * **Khoa/Chips Volume** = $\\text{Dry Volume} \\times \\frac{\\text{Khoa Proportion}}{\\text{Total Proportion}} \\times \\text{Wastage Factor}$
-    * **Mixing Water ($W/C = 0.45$):** Cement Bags $\\times 22.5 \\text{ Liters/bag}$
-
-    **3. Rebar Weight Formula:**
-    * **Unit Weight (kg/m)** = $\\frac{d^2}{162.2}$ (where $d$ is bar diameter in mm)
-    * **Total Steel Weight** = Total Length $\\times$ Unit Weight $\\times$ Wastage Factor
-    """)
-
-   # Only create this summary if the Footing & Column page is currently selected
-if st.session_state.get("calc_type") == "Footing & Column Estimation":
     fc_summary = [
         {"Item": "Total Concrete Volume", "Qty": f"{wet_vol:,.1f} CFT (Wet)", "Cost": "-"},
         {"Item": f"Cement ({clean_mix})", "Qty": f"{cement_bags:,.1f} Bags", "Cost": f"BDT {cost_c:,.2f}"},
@@ -373,7 +343,7 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
 
     st.session_state["estimates_data"]["Footing & Column"] = {
         "cost": total_fc_cost,
-        "summary": fc_summary
+        "items": fc_summary
     }
 
     pdf_data = generate_pdf_report("Footing & Column Estimate", engineer_name, project_name, location, wastage_percent, total_fc_cost, fc_summary)
@@ -384,30 +354,29 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
         mime="application/pdf"
     )
 
-# ----------------------------------------------------
-# SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING (Clean & Fixed)
-# ----------------------------------------------------
-elif st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
-    st.header("Sub-structure Excavation & Flat Brick Soling")
+    with st.expander("📐 View Engineering Formula & Sample Calculation"):
+        st.markdown("""
+        **1. Concrete Volume Calculation:**
+        * **Total Concrete Volume** = (Footings Volume + Columns Volume)
+        * **Dry Volume** = Wet Volume $\times 1.54$
+        """)
 
-    # Safe variables
-    rate_exc = 15.0
-    rate_sand = 35.0
-    rate_brick = 12.0
-    wastage_factor = 1.05
+# --------------------------------------------------
+# SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING
+# --------------------------------------------------
+elif st.session_state["calc_type"] == "🏗️ Sub-structure Excavation & Soling":
+    st.header("🏗️ Sub-structure Excavation & Flat Brick Soling")
 
-    # 1. INPUT FIELDS (Must be at the top)
     col_e1, col_e2 = st.columns(2)
     with col_e1:
-        total_length = st.number_input("Total Trench/Pit Length (ft)", min_value=1.0, value=100.0, key="ex_len_v2")
-        width = st.number_input("Trench/Pit Width (ft)", min_value=1.0, value=5.0, key="ex_width_v2")
-        depth = st.number_input("Excavation Depth (ft)", min_value=1.0, value=5.0, key="ex_depth_v2")
+        total_length = st.number_input("Total Trench/Pit Length (ft)", min_value=1.0, value=100.0)
+        width = st.number_input("Trench/Pit Width (ft)", min_value=1.0, value=5.0)
+        depth = st.number_input("Excavation Depth (ft)", min_value=1.0, value=5.0)
 
     with col_e2:
-        sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0, key="ex_sand_v2") / 12.0
-        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling", "Double Layer Flat Soling"], key="ex_soling_v2")
+        sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0) / 12.0
+        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling", "Double Layer Flat Soling"])
 
-    # 2. CALCULATIONS
     vol_cft = total_length * width * depth
     cost_exc = vol_cft * rate_exc
 
@@ -421,7 +390,6 @@ elif st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     total_ex_cost = cost_exc + cost_sand + cost_soling
 
-    # 3. DISPLAY METRICS & RESULTS
     st.markdown("---")
     st.subheader("📊 Quantities & Cost Breakdown")
 
@@ -432,14 +400,31 @@ elif st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     st.markdown(f"### 💰 **Total Section Cost: BDT {total_ex_cost:,.2f}**")
 
-    # 4. EXPANDER (Must be at the very bottom)
+    ex_summary = [
+        {"Item": "Earth Excavation", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
+        {"Item": "Sand Bed Cushion", "Qty": f"{sand_cft:,.1f} CFT", "Cost": f"BDT {cost_sand:,.2f}"},
+        {"Item": f"Brick Soling ({soling_type})", "Qty": f"{total_soling_bricks:,.0f} Pcs", "Cost": f"BDT {cost_soling:,.2f}"}
+    ]
+
+    st.session_state["estimates_data"]["Excavation & Soling"] = {
+        "cost": total_ex_cost,
+        "items": ex_summary
+    }
+
+    pdf_data = generate_pdf_report("Sub-structure Excavation & Soling", engineer_name, project_name, location, wastage_percent, total_ex_cost, ex_summary)
+    st.download_button(
+        label="📥 Download Section PDF Report",
+        data=pdf_data,
+        file_name=f"Excavation_Soling_Report_{project_name.replace(' ', '_')}.pdf",
+        mime="application/pdf"
+    )
+
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
-        st.markdown(f"""
-        **1. Earth Excavation Volume:**
-        * Formula = Length $\\times$ Width $\\times$ Depth
-        * Calculation = {total_length} ft $\\times$ {width} ft $\\times$ {depth} ft = **{vol_cft:,.1f} CFT**
+        st.markdown("""
+        **1. Earth Excavation Volume:** Length $\times$ Width $\times$ Depth
+        **2. Flat Brick Soling:** $\approx 3$ bricks per sq. ft. for single layer.
         """)
-        
+
 # --------------------------------------------------
 # SECTION 4: CONCRETE VOLUME (BEAM, COLUMN, SLAB, STAIR)
 # --------------------------------------------------
@@ -457,7 +442,6 @@ elif st.session_state["calc_type"] == "🧱 Concrete Volume (Beam, Column, Slab,
         c_dep = st.number_input("Thickness/Depth (inch)", min_value=1.0, value=6.0) / 12.0
         c_ratio = st.selectbox("Mix Ratio", ["1:1.5:3", "1:2:4"], key="c_mix")
 
-    # Calculations
     wet_c_vol = elem_count * c_len * c_wid * c_dep
     dry_c_vol = wet_c_vol * 1.54
 
@@ -548,7 +532,7 @@ elif st.session_state["calc_type"] == "📑 Combined Project Report":
         )
 
 # --------------------------------------------------
-# SECTION 6: USER RATINGS & FEEDBACK (Safe Persistent Version)
+# SECTION 6: USER RATINGS & FEEDBACK
 # --------------------------------------------------
 elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
     st.header("⭐ User Ratings & Feedback")
@@ -559,7 +543,6 @@ elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
 
     FEEDBACK_FILE = "feedback.json"
 
-    # Load existing feedbacks from file if exists, otherwise use default
     def load_feedbacks():
         if os.path.exists(FEEDBACK_FILE):
             try:
@@ -572,16 +555,13 @@ elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
             {"Engineer": "Engr. Tanvir", "Rating": "4/5 ⭐", "Feedback": "Great layout and regional pricing feature."}
         ]
 
-    # Save feedbacks safely to file
     def save_feedbacks(feedbacks):
         try:
             with open(FEEDBACK_FILE, "w", encoding="utf-8") as f:
                 json.dump(feedbacks, f, ensure_ascii=False, indent=4)
         except Exception:
-            # Fallback silently if cloud storage is read-only, preventing any app crash
             pass
 
-    # Initialize session state storage
     if "feedbacks_list" not in st.session_state:
         st.session_state["feedbacks_list"] = load_feedbacks()
 
@@ -596,16 +576,13 @@ elif st.session_state["calc_type"] == "⭐ User Ratings & Feedback":
                 "Rating": f"{rating}/5 ⭐",
                 "Feedback": feedback_text if feedback_text else "No comments provided"
             }
-            # Insert at the top of the list
             st.session_state["feedbacks_list"].insert(0, new_feedback)
-            # Save to file safely
             save_feedbacks(st.session_state["feedbacks_list"])
             st.success("Thank you! Your feedback has been published successfully.")
 
     st.markdown("---")
     st.subheader("📋 Public User Feedback & Ratings")
     
-    # Display all feedbacks on screen
     for idx, fb in enumerate(st.session_state["feedbacks_list"], 1):
         with st.container():
             st.info(f"**# {idx} | Engineer: {fb['Engineer']} | Rating: {fb['Rating']}**\n\n> \"{fb['Feedback']}\"")
