@@ -372,17 +372,17 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
     ]
 
    st.session_state["estimates_data"]["Footing & Column"] = {
-        "cost": total_fc_cost,
-        "summary": fc_summary
-    }
+    "cost": total_fc_cost,
+    "summary": fc_summary
+}
 
-    pdf_data = generate_pdf_report("Footing & Column Estimate", engineer_name, project_name, location, wastage_percent, total_fc_cost, fc_summary)
-    st.download_button(
-        label="📥 Download Section PDF Report",
-        data=pdf_data,
-        file_name=f"Footing_Column_Report_{project_name.replace(' ', '_')}.pdf",
-        mime="application/pdf"
-    )
+pdf_data = generate_pdf_report("Footing & Column Estimate", engineer_name, project_name, location, wastage_percent, total_fc_cost, fc_summary)
+st.download_button(
+    label="📥 Download Section PDF Report",
+    data=pdf_data,
+    file_name=f"Footing_Column_Report_{project_name.replace(' ', '_')}.pdf",
+    mime="application/pdf"
+)
 
 # ----------------------------------------------------
 # SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING (Clean & Fixed)
