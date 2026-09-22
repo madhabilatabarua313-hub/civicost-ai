@@ -273,11 +273,23 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
         mix_ratio = st.selectbox("Concrete Mix Ratio (BNBC)", ["1:1.5:3", "1:2:4", "1:1.5:3 (Grade M20)"])
         rebar_dia = st.selectbox("Main Rebar Diameter (mm)", [10, 12, 16, 20, 25], index=2)
         rebar_spacing = st.number_input("Rebar Center-to-Center Spacing (inch)", min_value=3.0, value=6.0)
-
+st.markdown("---")
+    st.markdown("##### 🏗️ Column Specifications")
+    col_c1, col_c2, col_c3 = st.columns(3)
+    with col_c1:
+        num_cols = st.number_input("Number of Columns", min_value=1, value=4)
+        col_len = st.number_input("Column Length/Dia (ft)", min_value=0.5, value=1.0, step=0.25)
+    with col_c2:
+        col_wid = st.number_input("Column Width (ft) [if square/rect]", min_value=0.5, value=1.0, step=0.25)
+        col_height = st.number_input("Column Height (ft)", min_value=1.0, value=10.0, step=0.5)
+    with col_c3:
+        tie_spacing = st.number_input("Tie/Stirrup Spacing (inch)", min_value=3.0, value=6.0, step=1.0)
+    
     # Engineering Calculations
     clean_mix = mix_ratio.split(" ")[0]
-    wet_vol = num_footings * f_len * f_wid * f_dep
-    dry_vol = wet_vol * 1.54  # Dry Volume Factor
+   footing_wet_vol = num_footings * f_len * f_width * f_dep
+    column_wet_vol = num_cols * col_len * col_wid * col_height
+    wet_vol = footing_wet_vol + column_wet_vol
     
     parts = [float(x) for x in clean_mix.split(":")]
     total_parts = sum(parts)
@@ -292,7 +304,15 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
 
     num_bars_x = int((f_len * 12) / rebar_spacing) + 1
     num_bars_y = int((f_wid * 12) / rebar_spacing) + 1
-    total_bar_len_ft = (num_bars_x * f_wid + num_bars_y * f_len) * num_footings
+    # Column main steel length & ties calculation
+    col_main_bar_ft = num_cols * col_height * 4  
+    num_ties_per_col = (col_height * 12) / tie_spacing
+    tie_perimeter = 2 * (col_len + col_wid)
+    total_ties_ft = num_cols * num_ties_per_col * (tie_perimeter + 1)
+    
+    # Total Bar Length including Footings and Columns
+    footing_bar_len = (num_bars_x * f_wid + num_bars_y * f_len) * num_footings
+    total_bar_len_ft = footing_bar_len + col_main_bar_ft + total_ties_ft
     
     # Rebar Weight Formula
     rebar_weight_kg = (total_bar_len_ft * ((rebar_dia ** 2) / 162.2) * 0.3048) * wastage_factor
@@ -318,14 +338,15 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
     q_col4.metric("Water Required", f"{water_liters:,.0f} Liters", f"BDT {cost_w:,.0f}")
     q_col5.metric(f"Rebar ({rebar_dia}mm)", f"{rebar_weight_kg:,.1f} KG", f"BDT {cost_r:,.0f}")
 
-    st.markdown(f"### 💰 **Total Footing Section Cost: BDT {total_fc_cost:,.2f}**")
+    st.markdown(f"### 💰 **Total Footing & Column Section Cost: BDT {total_fc_cost:,.2f}**")
 
     # Formula & Sample Calculation Expander
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
         st.markdown(f"""
         **1. Concrete Volume Calculation:**  
-        $$\\text{{Total Concrete (Wet Volume)}} = {num_footings} \\times {f_len} \\text{{ ft}} \\times {f_wid} \\text{{ ft}} \\times {f_dep:.2f} \\text{{ ft}} = \\mathbf{{{wet_vol:.2f} \\text{{ CFT}}}}$$  
-        $$\\text{{Dry Volume Factor (BNBC)}} = 1.54 \\implies \\text{{Dry Volume}} = {wet_vol:.2f} \\times 1.54 = \\mathbf{{{dry_vol:.2f} \\text{{ CFT}}}}$$
+       **1. Concrete Volume Calculation:**
+    $$\text{Total Concrete} = [\text{Footings: } {num_footings} \times ({f_len} \times {f_wid} \times {f_dep})] + [\text{Columns: } {num_cols} \times ({col_len} \times {col_wid} \times {col_height})] = {wet_vol:,.2f} \text{ CFT}$$
+    $$\text{Standard Practice Factor} = 1.54 \implies \text{Dry Volume} = {wet_vol:,.2f} \times 1.54 = \mathbf{{dry_vol:,.2f}} \text{ CFT}$$
 
         **2. Material Calculation (Mix Ratio {clean_mix}):**  
         - **Cement Bags:** $\\frac{{{dry_vol:.2f} \\times ({parts[0]}/{total_parts})}}{{1.25 \\text{{ CFT/bag}}}} \\times {wastage_factor} = \\mathbf{{{cement_bags:.2f} \\text{{ Bags}}}}$  
