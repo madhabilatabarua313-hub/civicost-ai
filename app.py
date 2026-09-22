@@ -385,50 +385,43 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
     )
 
 # ----------------------------------------------------
-# SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING
+# SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING (Clean & Fixed)
 # ----------------------------------------------------
 if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     st.header("Sub-structure Excavation & Flat Brick Soling")
 
-    # Safe fallback for all variables
-    rate_exc = locals().get('rate_exc', 15.0)
-    rate_sand = locals().get('rate_sand', 35.0)
-    rate_brick = locals().get('rate_brick', 12.0)
-    wastage_percent = locals().get('wastage_percent', 5.0)
-    wastage_factor = 1.0 + (wastage_percent / 100.0)
-    
-    engineer_name = locals().get('engineer_name', st.session_state.get('engineer_name', 'Engr. Madhabilata Barua'))
-    project_name = locals().get('project_name', st.session_state.get('project_name', '3-Storey Residential Building'))
-    location = locals().get('location', st.session_state.get('location', 'Chittagong'))
+    # Safe variables
+    rate_exc = 15.0
+    rate_sand = 35.0
+    rate_brick = 12.0
+    wastage_factor = 1.05
 
+    # 1. INPUT FIELDS (Must be at the top)
     col_e1, col_e2 = st.columns(2)
     with col_e1:
-        total_length = st.number_input("Total Trench/Pit Length (ft)", min_value=1.0, value=100.0, key="ex_len")
-        width = st.number_input("Trench/Pit Width (ft)", min_value=1.0, value=5.0, key="ex_width")
-        depth = st.number_input("Excavation Depth (ft)", min_value=1.0, value=5.0, key="ex_depth")
+        total_length = st.number_input("Total Trench/Pit Length (ft)", min_value=1.0, value=100.0, key="ex_len_v2")
+        width = st.number_input("Trench/Pit Width (ft)", min_value=1.0, value=5.0, key="ex_width_v2")
+        depth = st.number_input("Excavation Depth (ft)", min_value=1.0, value=5.0, key="ex_depth_v2")
 
     with col_e2:
-        sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0, key="ex_sand_depth") / 12.0
-        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling (3 bricks/sft)", "Double Layer Flat Soling (6 bricks/sft)"], key="ex_soling_type")
+        sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0, key="ex_sand_v2") / 12.0
+        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling", "Double Layer Flat Soling"], key="ex_soling_v2")
 
-    # Calculations
+    # 2. CALCULATIONS
     vol_cft = total_length * width * depth
     cost_exc = vol_cft * rate_exc
 
     sand_cft = (total_length * width * sand_depth) * wastage_factor
     cost_sand = sand_cft * rate_sand
 
-    if soling_type != "None":
-        soling_sqft = total_length * width
-        multiplier = 3.0 if "Single Layer" in soling_type else 6.0
-        total_soling_bricks = (soling_sqft * multiplier) * wastage_factor
-        cost_soling = total_soling_bricks * rate_brick
-    else:
-        total_soling_bricks = 0
-        cost_soling = 0.0
+    soling_sqft = total_length * width
+    multiplier = 3.0 if "Single Layer" in soling_type else 6.0
+    total_soling_bricks = (soling_sqft * multiplier) * wastage_factor
+    cost_soling = total_soling_bricks * rate_brick
 
     total_ex_cost = cost_exc + cost_sand + cost_soling
 
+    # 3. DISPLAY METRICS & RESULTS
     st.markdown("---")
     st.subheader("📊 Quantities & Cost Breakdown")
 
@@ -439,11 +432,12 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     st.markdown(f"### 💰 **Total Section Cost: BDT {total_ex_cost:,.2f}**")
 
-    # Formula Expander placed properly at the bottom inside the condition
+    # 4. EXPANDER (Must be at the very bottom)
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
         st.markdown(f"""
         **1. Earth Excavation Volume:**
-        * Volume = Length x Width x Depth = {total_length} ft x {width} ft x {depth} ft = **{vol_cft:,.1f} CFT**
+        * Formula = Length $\\times$ Width $\\times$ Depth
+        * Calculation = {total_length} ft $\\times$ {width} ft $\\times$ {depth} ft = **{vol_cft:,.1f} CFT**
         """)
         
 # --------------------------------------------------
