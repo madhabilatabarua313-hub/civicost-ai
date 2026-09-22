@@ -342,8 +342,8 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
 
     st.markdown(f"### 💰 **Total Footing & Column Section Cost: BDT {total_fc_cost:,.2f}**")
 
-    # Formula & Sample Calculation Expander
-    with st.expander("📐 View Engineering Formula & Sample Calculation"):
+# Formula & Sample Calculation Expander
+with st.expander("📐 View Engineering Formula & Sample Calculation"):
     st.markdown(rf"""
 **1. Concrete Volume Calculation:**
 $$\text{{Total Concrete}} = [\text{{Footings: }} {{num_footings}} \times ({{f_len}} \times {{f_wid}} \times {{f_dep}})] + [\text{{Columns: }} {{num_cols}} \times ({{col_len}} \times {{col_wid}} \times {{col_height}})] = {{wet_vol:,.2f}} \text{{ CFT}}$$
