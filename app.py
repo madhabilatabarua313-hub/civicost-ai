@@ -420,7 +420,7 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     st.markdown("---")
     st.subheader("📊 Quantities & Cost Breakdown")
-    st.caption(f"*Note: Soling bricks & sand cushion include a {wastage_percent}% wastage margin.*")
+    st.caption(f"Note: Soling bricks & sand cushion include a {wastage_percent}% wastage margin.")
 
     e_col1, e_col2, e_col3 = st.columns(3)
     e_col1.metric("Excavation Volume", f"{vol_cft:,.1f} CFT", f"BDT {cost_exc:,.0f}")
@@ -432,22 +432,20 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     # Formula Expander
     with st.expander("📐 View Engineering Formula & Sample Calculation"):
         st.markdown(f"""
-        **1. Earth Excavation Volume:**  
-        $$\\text{{Volume}} = {total_length} \\text{{ ft}} \\times {width} \\text{{ ft}} \\times {depth} \\text{{ ft}} = \\mathbf{{{vol_cft:.2f} \\text{{ CFT}}}}$$
-
-      **2. Flat Brick Soling Requirement (Standard Practice):**
-        - Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
-    """)
+        **1. Earth Excavation Volume:**
+        * Volume = Length $\\times$ Width $\\times$ Depth = {total_length} ft $\\times$ {width} ft $\\times$ {depth} ft = **{vol_cft:,.1f} CFT**
+        
+        **2. Flat Brick Soling Requirement (Standard Practice):**
+        * Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
+        """)
         
         area = total_length * width
         multiplier = 3.0 if 'Single' in soling_type else 6.0
-        
         st.latex(
-            rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times {wastage_factor:.2f} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
+            rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times \text{{wastage_factor}} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
         )
 
-  # Only create this summary if the Sub-structure Excavation & Soling page is currently selected
-if st.session_state.get("calc_type") == "Sub-structure Excavation & Soling":
+    # Session State Summary Update
     ex_summary = [
         {"Item": "Earth Excavation", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
         {"Item": "Sand Filling Cushion", "Qty": f"{sand_cft:,.1f} CFT", "Cost": f"BDT {cost_sand:,.2f}"},
@@ -461,12 +459,11 @@ if st.session_state.get("calc_type") == "Sub-structure Excavation & Soling":
 
     pdf_data = generate_pdf_report("Excavation & Soling Estimate", engineer_name, project_name, location, wastage_percent, total_ex_cost, ex_summary)
     st.download_button(
-        label="📄 Download Section PDF Report",
+        label="📥 Download Section PDF Report",
         data=pdf_data,
         file_name=f"Excavation_Soling_Report_{project_name.replace(' ', '_')}.pdf",
         mime="application/pdf"
     )
-
 # --------------------------------------------------
 # SECTION 4: CONCRETE VOLUME (BEAM, COLUMN, SLAB, STAIR)
 # --------------------------------------------------
