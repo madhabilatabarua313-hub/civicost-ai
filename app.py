@@ -275,7 +275,7 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
         rebar_spacing = st.number_input("Rebar Center-to-Center Spacing (inch)", min_value=3.0, value=6.0)
 st.markdown("---")
 st.markdown("##### 📏 Column Specifications")  
-    col_c1, col_c2, col_c3 = st.columns(3)
+col_c1, col_c2, col_c3 = st.columns(3)
     with col_c1:
         num_cols = st.number_input("Number of Columns", min_value=1, value=4)
         col_len = st.number_input("Column Length/Dia (ft)", min_value=0.5, value=1.0, step=0.25)
