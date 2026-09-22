@@ -382,11 +382,11 @@ with st.expander("📐 View Engineering Formula & Sample Calculation"):
         mime="application/pdf"
     )
 
-# --------------------------------------------------
+# ---------------------------------------------
 # SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING
-# --------------------------------------------------
-elif st.session_state["calc_type"] == "🏗️ Sub-structure Excavation & Soling":
-    st.header("🏗️ Sub-structure Excavation & Flat Brick Soling")
+# ---------------------------------------------
+if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
+    st.header("Sub-structure Excavation & Flat Brick Soling")
 
     col_e1, col_e2 = st.columns(2)
     with col_e1:
@@ -396,7 +396,7 @@ elif st.session_state["calc_type"] == "🏗️ Sub-structure Excavation & Soling
 
     with col_e2:
         sand_depth = st.number_input("Sand Bed Cushion Depth (inch)", min_value=0.0, value=3.0) / 12.0
-        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling (3 bricks/sft)", "Double Layer Flat Soling (6 bricks/sft)", "None"])
+        soling_type = st.selectbox("Brick Soling Type", ["Single Layer Flat Soling (3 bricks/sft)", "Double Layer Flat Soling (6 bricks/sft)"])
 
     # Calculations
     vol_cft = total_length * width * depth
