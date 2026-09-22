@@ -286,12 +286,13 @@ elif st.session_state["calc_type"] == "📐 Footing & Column Estimation":
     with col_c3:
         tie_spacing = st.number_input("Tie/Stirrup Spacing (inch)", min_value=3.0, value=6.0, step=1.0)
     
-    # Engineering Calculations
+   # Engineering Calculations
     clean_mix = mix_ratio.split(" ")[0]
-   footing_wet_vol = num_footings * f_len * f_width * f_dep
+    footing_wet_vol = num_footings * f_len * f_wid * f_dep
     column_wet_vol = num_cols * col_len * col_wid * col_height
     wet_vol = footing_wet_vol + column_wet_vol
-    
+    dry_vol = wet_vol * 1.54
+
     parts = [float(x) for x in clean_mix.split(":")]
     total_parts = sum(parts)
     
