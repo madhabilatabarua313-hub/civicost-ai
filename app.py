@@ -429,22 +429,6 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
 
     st.markdown(f"### 💰 **Total Section Cost: BDT {total_ex_cost:,.2f}**")
 
-    # Formula Expander
-    with st.expander("📐 View Engineering Formula & Sample Calculation"):
-        st.markdown(f"""
-        **1. Earth Excavation Volume:**
-        * Volume = Length $\\times$ Width $\\times$ Depth = {total_length} ft $\\times$ {width} ft $\\times$ {depth} ft = **{vol_cft:,.1f} CFT**
-        
-        **2. Flat Brick Soling Requirement (Standard Practice):**
-        * Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
-        """)
-        
-        area = total_length * width
-        multiplier = 3.0 if 'Single' in soling_type else 6.0
-        st.latex(
-            rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times \text{{wastage_factor}} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
-        )
-
     # Session State Summary Update
     ex_summary = [
         {"Item": "Earth Excavation", "Qty": f"{vol_cft:,.1f} CFT", "Cost": f"BDT {cost_exc:,.2f}"},
@@ -464,6 +448,23 @@ if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
         file_name=f"Excavation_Soling_Report_{project_name.replace(' ', '_')}.pdf",
         mime="application/pdf"
     )
+
+    # Formula Expander at the bottom
+    with st.expander("📐 View Engineering Formula & Sample Calculation"):
+        st.markdown(f"""
+        **1. Earth Excavation Volume:**
+        * Volume = Length $\\times$ Width $\\times$ Depth = {total_length} ft $\\times$ {width} ft $\\times$ {depth} ft = **{vol_cft:,.1f} CFT**
+        
+        **2. Flat Brick Soling Requirement (Standard Practice):**
+        * Standard Flat Brick Soling = **3 Bricks / Sq.ft per layer**
+        """)
+        
+        area = total_length * width
+        multiplier = 3.0 if 'Single' in soling_type else 6.0
+        st.latex(
+            rf"\text{{Soling Bricks}} = {area:.1f} \text{{ SFT}} \times {multiplier} \times \text{{wastage_factor}} = \mathbf{{{total_soling_bricks:,.0f} \text{{ Pcs}}}}"
+        )
+        
 # --------------------------------------------------
 # SECTION 4: CONCRETE VOLUME (BEAM, COLUMN, SLAB, STAIR)
 # --------------------------------------------------
