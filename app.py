@@ -387,7 +387,7 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
 # ----------------------------------------------------
 # SECTION 3: SUB-STRUCTURE EXCAVATION & SOLING (Clean & Fixed)
 # ----------------------------------------------------
-if st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
+elif st.session_state["calc_type"] == "Sub-structure Excavation & Soling":
     st.header("Sub-structure Excavation & Flat Brick Soling")
 
     # Safe variables
