@@ -371,12 +371,12 @@ if st.session_state.get("calc_type") == "Footing & Column Estimation":
         {"Item": f"Steel Rebar ({rebar_dia}mm)", "Qty": f"{rebar_weight_kg:,.1f} KG", "Cost": f"BDT {cost_r:,.2f}"}
     ]
 
-    st.session_state["estimates_data"]["Footing & Column"] = {
+   st.session_state["estimates_data"]["Footing & Column"] = {
         "cost": total_fc_cost,
         "summary": fc_summary
     }
 
-   pdf_data = generate_pdf_report("Footing & Column Estimate", engineer_name, project_name, location, wastage_percent, total_fc_cost, fc_summary)
+    pdf_data = generate_pdf_report("Footing & Column Estimate", engineer_name, project_name, location, wastage_percent, total_fc_cost, fc_summary)
     st.download_button(
         label="📥 Download Section PDF Report",
         data=pdf_data,
